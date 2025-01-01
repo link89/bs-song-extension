@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Oculus Quest Song Helper</title>
+  </head>
+  <body>
+    <div id="status">No activity yet...</div>
+    <script src="popup.js"></script>
+  </body>
+</html>

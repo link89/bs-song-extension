@@ -6,6 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "weihong.xu",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@yume-chan/adb": "^1.1.0",
+    "@yume-chan/adb-daemon-webusb": "^1.1.0"
+  }
 }

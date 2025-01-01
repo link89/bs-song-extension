@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Beat Saber Song Extension for Oculus Quest",
+  "version": "1.0",
+  "description": "Connect to Oculus Quest via ADB to manage custom Beat Saber maps.",
+  "permissions": [
+    "downloads",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "dist/background.js"
+  },
+  "action": {
+    "default_popup": "dist/popup.html"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
