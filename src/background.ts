@@ -1,41 +1,41 @@
-import { AdbDaemonWebUsbDeviceManager, AdbDaemonWebUsbDevice  } from "@yume-chan/adb-daemon-webusb";
+import { AdbDaemonWebUsbDeviceManager, AdbDaemonWebUsbConnection} from "@yume-chan/adb-daemon-webusb";
+import { Adb, AdbDaemonTransport } from "@yume-chan/adb";
+import AdbWebCredentialStore from "@yume-chan/adb-credential-web";
+
 
 
 export class AdbService {
   // Ref: https://docs.tangoapp.dev/tango/daemon/
   private manager: AdbDaemonWebUsbDeviceManager;
-  private device?: AdbDaemonWebUsbDevice;
-
+  private adb?: Adb;
+  
   constructor() {
     this.manager = AdbDaemonWebUsbDeviceManager.BROWSER!;
   }
 
-  // Example: connect via WebUSB or a direct transport method
   public async connect(): Promise<void> {
-    // Implementation using WebUSB or direct AdbDaemonTransport APIs
-    this.device = await this.manager.requestDevice();
-    if (this.device) {
-      await this.device.connect();
+    const device = await this.manager.requestDevice();
+    if (device) {
+      const connection = await device.connect();
+      const credentialStore = new AdbWebCredentialStore();
+      const transport = await AdbDaemonTransport.authenticate({
+        serial: device.serial,
+        connection,
+        credentialStore,
+      })
+      this.adb = new Adb(transport);
+    }
+  }
+  
+
+  public async pushFile(localFilePath: string, deviceFilePath: string): Promise<void> {
+    if (this.adb) {
     }
   }
 
-  // Example: push a file
-  public async pushFile(localFilePath: string, deviceFilePath: string): Promise<void> {
-    // Use ADB push to transfer the file
-    // ...
-  }
-
-  // Example: run a shell command
   public async shell(cmd: string): Promise<void> {
-    // Use ADB shell to execute a command
-    // ...
   }
 
-  // Example: check if connected
-  public isConnected(): boolean {
-    // Return whether device is connected
-    return true;
-  }
 }
 
 const adbService = new AdbService();
