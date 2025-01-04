@@ -3,33 +3,45 @@ import { AdbDaemonWebUsbDeviceManager } from "@yume-chan/adb-daemon-webusb";
 
 const Manager = AdbDaemonWebUsbDeviceManager.BROWSER!;
 
+// src/adbTransport.ts
+// Placeholder for interacting with AdbDaemonTransport as described in your reference:
+// https://docs.tangoapp.dev/tango/daemon/
 
+export class AdbTransport {
+  private device: any; // Replace 'any' with the proper type if available
 
+  constructor() {
+  }
 
-async function connectToDevice(): Promise<Adb | null> {
-  try {
-    // Request a WebUSB device that supports ADB
-    const backend = await AdbWebUsbBackend.requestDevice();
-    const device = new Adb(backend);
-    await device.connect();
-    return device;
-  } catch (error) {
-    console.error("Failed to connect to device:", error);
-    return null;
+  // Example: connect via WebUSB or a direct transport method
+  public async connect(): Promise<void> {
+    // Implementation using WebUSB or direct AdbDaemonTransport APIs
+    // e.g., requestDevice, open, etc.
+    // ...
+  }
+
+  // Example: push a file
+  public async pushFile(localFilePath: string, deviceFilePath: string): Promise<void> {
+    // Use ADB push to transfer the file
+    // ...
+  }
+
+  // Example: run a shell command
+  public async shell(cmd: string): Promise<void> {
+    // Use ADB shell to execute a command
+    // ...
+  }
+
+  // Example: check if connected
+  public isConnected(): boolean {
+    // Return whether device is connected
+    return !!this.device;
   }
 }
 
-async function pushAndUnzipFile(device: Adb, localFilePath: string, remotePath: string) {
-  // Push the ZIP file to the Quest
-  console.log(`Pushing ${localFilePath} to ${remotePath}`);
-  await device.sync.push(localFilePath, remotePath);
+const adbTransport = new AdbTransport();
 
-  // Run unzip in ADB shell
-  console.log(`Unzipping file on device at ${remotePath}`);
-  const unzipCommand = `unzip -o "${remotePath}" -d "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomLevels/"`;
-  const shellResult = await device.shell(unzipCommand);
-  console.log("Unzip command output:", shellResult);
-}
+
 
 // Listen for downloads
 chrome.downloads.onCreated.addListener(async downloadItem => {
