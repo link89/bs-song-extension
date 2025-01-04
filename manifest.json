@@ -8,17 +8,16 @@
     "storage"
   ],
   "background": {
-    "service_worker": "dist/background.js"
+    "type": "module",
+    "service_worker": "src/background.ts"
+    
   },
   "action": {
-    "default_popup": "dist/popup.html"
+    "default_popup": "src/popup.html"
   },
   "host_permissions": [
     "<all_urls>"
   ],
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
   }
 }

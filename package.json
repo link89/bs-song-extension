@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Beat Saber extension to download song to Oculus Quest via ADB",
   "scripts": {
-    "build": "parcel build --no-content-hash src/*.html --no-source-maps --public-url ./",
+    "build": "parcel build manifest.json --config @parcel/config-webextension",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "weihong.xu",
