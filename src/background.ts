@@ -1,23 +1,22 @@
-import { AdbDaemonWebUsbDeviceManager } from "@yume-chan/adb-daemon-webusb";
+import { AdbDaemonWebUsbDeviceManager, AdbDaemonWebUsbDevice  } from "@yume-chan/adb-daemon-webusb";
 
 
-const Manager = AdbDaemonWebUsbDeviceManager.BROWSER!;
-
-// src/adbTransport.ts
-// Placeholder for interacting with AdbDaemonTransport as described in your reference:
-// https://docs.tangoapp.dev/tango/daemon/
-
-export class AdbTransport {
-  private device: any; // Replace 'any' with the proper type if available
+export class AdbService {
+  // Ref: https://docs.tangoapp.dev/tango/daemon/
+  private manager: AdbDaemonWebUsbDeviceManager;
+  private device?: AdbDaemonWebUsbDevice;
 
   constructor() {
+    this.manager = AdbDaemonWebUsbDeviceManager.BROWSER!;
   }
 
   // Example: connect via WebUSB or a direct transport method
   public async connect(): Promise<void> {
     // Implementation using WebUSB or direct AdbDaemonTransport APIs
-    // e.g., requestDevice, open, etc.
-    // ...
+    this.device = await this.manager.requestDevice();
+    if (this.device) {
+      await this.device.connect();
+    }
   }
 
   // Example: push a file
@@ -35,13 +34,11 @@ export class AdbTransport {
   // Example: check if connected
   public isConnected(): boolean {
     // Return whether device is connected
-    return !!this.device;
+    return true;
   }
 }
 
-const adbTransport = new AdbTransport();
-
-
+const adbService = new AdbService();
 
 // Listen for downloads
 chrome.downloads.onCreated.addListener(async downloadItem => {
@@ -54,11 +51,6 @@ chrome.downloads.onCreated.addListener(async downloadItem => {
       console.log("Beat Saber map ZIP detected. Attempting ADB push...");
 
       // Connect to Quest
-      const adbDevice = await connectToDevice();
-      if (!adbDevice) {
-        console.error("No device connected.");
-        return;
-      }
 
       // Wait until the download is complete before pushing
       // You can also listen to onChanged event.
@@ -67,7 +59,6 @@ chrome.downloads.onCreated.addListener(async downloadItem => {
           const downloadedPath = results[0].filename;
           const remoteZipPath = "/sdcard/Download/beatmap.zip";
 
-          await pushAndUnzipFile(adbDevice, downloadedPath, remoteZipPath);
         }
       });
     }
