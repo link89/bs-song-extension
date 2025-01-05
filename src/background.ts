@@ -3,7 +3,6 @@ import { Adb, AdbDaemonTransport } from "@yume-chan/adb";
 import AdbWebCredentialStore from "@yume-chan/adb-credential-web";
 
 
-
 export class AdbService {
   // Ref: https://docs.tangoapp.dev/tango/daemon/
   private manager: AdbDaemonWebUsbDeviceManager;
@@ -27,7 +26,6 @@ export class AdbService {
     }
   }
   
-
   public async pushFile(localFilePath: string, deviceFilePath: string): Promise<void> {
     if (this.adb) {
     }
@@ -43,24 +41,24 @@ const adbService = new AdbService();
 // Listen for downloads
 chrome.downloads.onCreated.addListener(async downloadItem => {
   try {
+    // Get the current tab
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const currentTab = tabs[0];
+    if (!currentTab) {
+      return;
+    }
+    const currentUrl = currentTab.url!;
+    if (!currentUrl.includes("bsaber.com") || !currentUrl.includes("beatsaver.com")) {
+      return;
+    }
+
     const url = downloadItem.finalUrl || downloadItem.url;
     const filename = downloadItem.filename || "";
 
     // Basic checks for Beat Saber zip
-    if (url.includes("beatsaber") && filename.endsWith(".zip")) {
+    if (filename.endsWith(".zip")) {
       console.log("Beat Saber map ZIP detected. Attempting ADB push...");
 
-      // Connect to Quest
-
-      // Wait until the download is complete before pushing
-      // You can also listen to onChanged event.
-      chrome.downloads.search({ id: downloadItem.id }, async results => {
-        if (results && results.length > 0 && results[0].state === "complete") {
-          const downloadedPath = results[0].filename;
-          const remoteZipPath = "/sdcard/Download/beatmap.zip";
-
-        }
-      });
     }
   } catch (error) {
     console.error("Error handling download:", error);
