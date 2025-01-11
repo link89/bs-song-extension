@@ -23,6 +23,9 @@ export class AdbService {
         connection,
         credentialStore,
       })
+      transport.disconnected.then(() => {
+        this.adb = undefined;
+      });
       this.adb = new Adb(transport);
       return this.adb;
     }
@@ -34,7 +37,7 @@ export class AdbService {
     const sync = await adb.sync();
     const res = await fetch(url);
     if (deviceFilePath.endsWith("/")) {
-      const filename = res.headers.get("Content-Disposition") || url.split("/").pop();
+      const filename = res.headers.get("content-disposition")?.split("filename=")?.[1] || url.split("/").pop();
       deviceFilePath += filename;
     }
     await sync.write({
@@ -53,7 +56,7 @@ export class AdbService {
 
 const adbService = new AdbService();
 const BSAVER_API_URL = "https://api.beatsaver.com";
-const CUSTOM_LEVEL_PATH = "/sdcard/ModData/com.beatgames.beatsaber/Mods/CustomSongs";
+const CUSTOM_LEVEL_PATH = "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomLevels/";
 
 
 // Listent for message from the content script
@@ -69,8 +72,6 @@ chrome.runtime.onMessage.addListener( async (message, sender, sendResponse) => {
     const filename = await adbService.pushUrl(downloadURL, CUSTOM_LEVEL_PATH);
     // unzip the map
     await adbService.shell(`cd ${CUSTOM_LEVEL_PATH} && unzip -o ${filename}`);
-    // TODO: update the recent playlist and add the map to it
-
     // send response to the content script
     sendResponse({ status: "success" });
   }
