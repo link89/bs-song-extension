@@ -12,7 +12,8 @@ export class AdbService {
     this.manager = AdbDaemonWebUsbDeviceManager.BROWSER!;
   }
 
-  public async connect(): Promise<void> {
+  public async connect(): Promise<Adb> {
+    if (this.adb) return this.adb;
     const device = await this.manager.requestDevice();
     if (device) {
       const connection = await device.connect();
@@ -23,44 +24,54 @@ export class AdbService {
         credentialStore,
       })
       this.adb = new Adb(transport);
+      return this.adb;
     }
+    throw new Error("No device found");
   }
   
-  public async pushFile(localFilePath: string, deviceFilePath: string): Promise<void> {
-    if (this.adb) {
+  public async pushUrl(url: string, deviceFilePath: string): Promise<string> {
+    const adb = await this.connect();
+    const sync = await adb.sync();
+    const res = await fetch(url);
+    if (deviceFilePath.endsWith("/")) {
+      const filename = res.headers.get("Content-Disposition") || url.split("/").pop();
+      deviceFilePath += filename;
     }
+    await sync.write({
+      file: res.body! as any,
+      filename: deviceFilePath,
+      permission: 0o644,
+    })
+    return deviceFilePath;
   }
 
-  public async shell(cmd: string): Promise<void> {
+  public async shell(command: string) {
+    const adb = await this.connect();
+    return await adb.subprocess.spawnAndWait(command);
   }
-
 }
 
 const adbService = new AdbService();
+const BSAVER_API_URL = "https://api.beatsaver.com";
+const CUSTOM_LEVEL_PATH = "/sdcard/ModData/com.beatgames.beatsaber/Mods/CustomSongs";
 
-// Listen for downloads
-chrome.downloads.onCreated.addListener(async downloadItem => {
-  try {
-    // Get the current tab
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const currentTab = tabs[0];
-    if (!currentTab) {
-      return;
-    }
-    const currentUrl = currentTab.url!;
-    if (!currentUrl.includes("bsaber.com") || !currentUrl.includes("beatsaver.com")) {
-      return;
-    }
 
-    const url = downloadItem.finalUrl || downloadItem.url;
-    const filename = downloadItem.filename || "";
+// Listent for message from the content script
+chrome.runtime.onMessage.addListener( async (message, sender, sendResponse) => {
+  if (message.event === "DOWNLOAD_BS_MAP") {
+    console.log("Download event received:", message);
+    const bsMapId = message.bsMapId;
+    // send request to bsaver API to get the download link
+    const response = await fetch(`${BSAVER_API_URL}/maps/id/${bsMapId}`);
+    const data = await response.json();
+    const downloadURL = data.versions[0].downloadURL;
+    // download the map and push it to the device
+    const filename = await adbService.pushUrl(downloadURL, CUSTOM_LEVEL_PATH);
+    // unzip the map
+    await adbService.shell(`cd ${CUSTOM_LEVEL_PATH} && unzip -o ${filename}`);
+    // TODO: update the recent playlist and add the map to it
 
-    // Basic checks for Beat Saber zip
-    if (filename.endsWith(".zip")) {
-      console.log("Beat Saber map ZIP detected. Attempting ADB push...");
-
-    }
-  } catch (error) {
-    console.error("Error handling download:", error);
+    // send response to the content script
+    sendResponse({ status: "success" });
   }
 });

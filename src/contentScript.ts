@@ -1,9 +1,18 @@
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === "SCAN_BS_MAPS") {
-    const bsMapIds = Array.from(document.querySelectorAll("a"))
-      .map(a => a.href)
-      .filter(href => href.startsWith("beatsaver://"))
-      .map(href => new URL(href).pathname.split("/").pop());
-    sendResponse({ bsMapIds });
+document.addEventListener('click', function(event) {
+  let target = event.target as unknown as HTMLElement | null;
+  while (target && target.tagName !== 'A') {
+    target = target.parentElement;
+  }
+
+  if (target && target.tagName === 'A') {
+    const href = target.getAttribute('href');
+    if (href && href.startsWith('beatsaver://')) {
+      event.preventDefault();
+      
+      // Send message to background script
+      const bsMapId = href.split('/').pop();
+      chrome.runtime.sendMessage({ event: 'DOWNLOAD_BS_MAP', bsMapId });
+    }
   }
 });
+
