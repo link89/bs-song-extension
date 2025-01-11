@@ -5,6 +5,7 @@
     "moduleResolution": "node",
     "lib": ["ES2020", "DOM"],
     "types": ["chrome"],
+    "allowSyntheticDefaultImports": true,
     "strict": true
   },
   "include": ["src"]

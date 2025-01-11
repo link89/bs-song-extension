@@ -16,3 +16,7 @@ chrome.storage.sync.get(["userSettings"], (data) => {
   }
 });
 
+$(document).ready(() => {
+
+
+});
