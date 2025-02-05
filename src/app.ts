@@ -1,243 +1,272 @@
-import { Terminal } from 'xterm';
+// Import necessary xterm modules and the fit addon.
+// Note: External dependencies are injected, so they can be replaced by the dependency injection container.
+import { Terminal, ITheme } from 'xterm';
 import { FitAddon } from '@xterm/addon-fit';
 
-// Define the context interface for command execution
-interface Context {
-  terminal: Terminal;
-  args: string[];
-}
-
-// Updated Command interface with description and usage.
+// Define a Command interface and command tree for our song management demo
 interface Command {
-  command?: string;
+  cmd?: string;
   description: string;
-  usage?: string; // Changed from required to optional
-  execute?: (ctx: Context) => Promise<void> | void;
+  usage?: string;
+  execute?: (args: string[], terminal: Terminal) => Promise<void>;
   children?: Command[];
 }
 
-// Global configuration store for config commands
+// A simple configuration store
 const configStore: { [key: string]: string } = {};
 
-// Create a terminal using xterm.js with Solarized colors
-const terminal = new Terminal({
-  theme: {
-    background: '#002b36',
-    foreground: '#839496',
-  }
-});
-
-// Create and load the FitAddon to support auto-resizing.
-const fitAddon = new FitAddon();
-terminal.loadAddon(fitAddon);
-
-terminal.open(document.getElementById('terminal-container')!);
-// Fit the terminal to the container's dimensions
-fitAddon.fit();
-
-terminal.writeln('Welcome to the Command Line App');
-terminal.write('> ');
-
-let currentInput = '';
-let isExecuting: boolean = false;
-
-// Adjust the terminal's size on window resize
-window.addEventListener('resize', () => {
-  fitAddon.fit();
-});
-
-// Function to process a full command input upon pressing Enter.
-// This function waits for command execution before showing a new prompt.
-const processCommand = async (input: string) => {
-  isExecuting = true;
-  const tokens = input.trim().split(/\s+/);
-  if (tokens.length === 0 || tokens[0] === '') {
-    terminal.write('> ');
-    isExecuting = false;
-    return;
-  }
-  await executeCommand(rootCommand, tokens);
-  terminal.write('> ');
-  isExecuting = false;
-};
-
-// Recursively search through the command tree and execute the matching command.
-// If no matching subcommand is found but the current node has an execute method,
-// it passes the remaining tokens as arguments.
-const executeCommand = async (commandNode: Command, tokens: string[]): Promise<void> => {
-  if (!commandNode.children || tokens.length === 0) {
-    if (commandNode.execute) {
-      await commandNode.execute({ terminal, args: tokens });
-    } else {
-      terminal.writeln('Command not found or no executable command.');
-    }
-    return;
-  }
-  
-  const child = commandNode.children.find(cmd => cmd.command === tokens[0]);
-  if (child) {
-    await executeCommand(child, tokens.slice(1));
-  } else {
-    if (commandNode.execute) {
-      await commandNode.execute({ terminal, args: tokens });
-    } else {
-      terminal.writeln('Command not found.');
-    }
-  }
-};
-
-// Helper function to fetch a command by following the token path.
-const getCommandByPath = (commandNode: Command, tokens: string[]): Command | null => {
-  if (!tokens || tokens.length === 0) {
-    return commandNode;
-  }
-  if (!commandNode.children) return null;
-  const child = commandNode.children.find(cmd => cmd.command === tokens[0]);
-  return child ? getCommandByPath(child, tokens.slice(1)) : null;
-};
-
-// Helper function to construct the full command from tokens.
-const getFullCommand = (tokens: string[]): string => {
-  return tokens.join(' ');
-};
-
-// Helper function to print help information for a specific command.
-const printCommandHelp = (fullCommand: string, cmd: Command, terminal: Terminal): void => {
-  if (fullCommand) {
-    terminal.writeln(`${fullCommand} - ${cmd.description}`);
-  } else {
-    terminal.writeln(cmd.description);
-  } 
-
-  if (cmd.children && cmd.children.length > 0) {
-    terminal.writeln("  Subcommands:");
-    cmd.children.forEach(child => {
-      terminal.writeln(`    ${child.command} - ${child.description}`);
-    });
-  } else {
-    // If no children, print the usage.
-    if (cmd.usage) {
-      terminal.writeln("  Usage:");
-      terminal.writeln(`    ${fullCommand} ${cmd.usage}`);
-    }
-  }
-};
-
-// Define the recursive command tree.
+// Define the root commands
 const rootCommand: Command = {
-  description: 'Welcome to Beat Saber Song Manager',
+  description: 'Welcome to song manager',
   children: [
     {
-      command: "song",
-      description: "Operations for songs",
+      cmd: 'song',
+      description: 'Manage songs',
       children: [
         {
-          command: "ls",
-          description: "List available songs",
-          execute: async (ctx: Context) => {
-            ctx.terminal.writeln("Song1\nSong2\nSong3");
+          cmd: 'ls',
+          description: 'List all songs',
+          execute: async (_args: string[], terminal: Terminal) => {
+            // Simulate a listing of songs
+            terminal.writeln('\r\nSong List:');
+            terminal.writeln('1. Song A');
+            terminal.writeln('2. Song B');
+            terminal.writeln('3. Song C');
           }
         },
         {
-          command: "download",
-          description: "Download a song from the given URL",
-          usage: "<url>",
-          execute: async (ctx: Context) => {
-            const url = ctx.args[0];
-            if (!url) {
-              ctx.terminal.writeln("Error: No URL provided.");
+          cmd: 'download',
+          description: 'Download a song',
+          usage: 'download <url>',
+          execute: async (args: string[], terminal: Terminal) => {
+            if (args.length < 1) {
+              terminal.writeln('\r\nUsage: song download <url>');
               return;
             }
-            ctx.terminal.writeln(`Downloading song from ${url}...`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            ctx.terminal.writeln("Download completed (simulated).");
+            const url = args[0];
+            terminal.writeln(`\r\nDownloading song from: ${url} ...`);
+            // Simulate an async download task with delay
+            await new Promise(res => setTimeout(res, 1500));
+            terminal.writeln('Download completed.');
           }
         }
       ]
     },
     {
-      command: "config",
-      description: "Get or set configuration values",
+      cmd: 'config',
+      description: 'Manage configuration',
       children: [
         {
-          command: "get",
-          description: "Get the value of the configuration key",
-          usage: "<key>",
-          execute: (ctx: Context) => {
-            const key = ctx.args[0];
-            if (!key) {
-              ctx.terminal.writeln("Error: No key provided.");
+          cmd: 'set',
+          description: 'Set configuration',
+          usage: 'set <key> <value>',
+          execute: async (args: string[], terminal: Terminal) => {
+            if (args.length < 2) {
+              terminal.writeln('\r\nUsage: config set <key> <value>');
               return;
             }
-            const value = configStore[key];
-            if (value === undefined) {
-              ctx.terminal.writeln(`Configuration for '${key}' not found.`);
-            } else {
-              ctx.terminal.writeln(`${key} = ${value}`);
-            }
-          }
-        },
-        {
-          command: "set",
-          description: "Set a new value for the configuration key",
-          usage: "<key> <value>",
-          execute: (ctx: Context) => {
-            const key = ctx.args[0];
-            const value = ctx.args[1];
-            if (!key || !value) {
-              ctx.terminal.writeln("Usage: config set <key> <value>");
-              return;
-            }
+            const key = args[0];
+            const value = args[1];
             configStore[key] = value;
-            ctx.terminal.writeln(`Configuration '${key}' set to '${value}'.`);
+            terminal.writeln(`\r\nConfiguration updated: ${key} = ${value}`);
+          }
+        },
+        {
+          cmd: 'get',
+          description: 'Get configuration',
+          usage: 'get <key>',
+          execute: async (args: string[], terminal: Terminal) => {
+            if (args.length < 1) {
+              terminal.writeln('\r\nUsage: config get <key>');
+              return;
+            }
+            const key = args[0];
+            const value = configStore[key];
+            terminal.writeln(`\r\nConfiguration: ${key} = ${value ? value : 'undefined'}`);
           }
         }
       ]
     },
     {
-      command: "help",
-      description: "Show usage information for commands",
-      usage: "[<command> ...]",
-
-      execute: (ctx: Context) => {
-        if (ctx.args.length === 0) {
-          printCommandHelp("", rootCommand, ctx.terminal);
+      cmd: 'help',
+      description: 'Show help information',
+      usage: 'help [cmd]',
+      execute: async (args: string[], terminal: Terminal) => {
+        // If no argument given, list top-level commands.
+        if (args.length === 0) {
+          terminal.writeln('\r\nAvailable commands:');
+          rootCommand.children?.forEach(child => {
+            terminal.writeln(`- ${child.cmd}: ${child.description}`);
+          });
         } else {
-          const cmd = getCommandByPath(rootCommand, ctx.args);
-          if (cmd) {
-            const fullCmd = getFullCommand(ctx.args);
-            printCommandHelp(fullCmd, cmd, ctx.terminal);
+          // Show help information for a specific command recursively.
+          function findCommand(tokens: string[], current: Command): Command | undefined {
+            if (tokens.length === 0) return current;
+            const token = tokens[0];
+            const child = current.children?.find(c => c.cmd === token);
+            if (child) {
+              return findCommand(tokens.slice(1), child);
+            }
+            return undefined;
+          }
+          const cmdToFind = args;
+          const found = findCommand(cmdToFind, rootCommand);
+          if (found) {
+            terminal.writeln('\r\nHelp:');
+            terminal.writeln(`Command: ${found.cmd || '<root>'}`);
+            terminal.writeln(`Description: ${found.description}`);
+            if (found.usage) {
+              terminal.writeln(`Usage: ${found.usage}`);
+            }
           } else {
-            terminal.writeln("No help available for the specified command.");
+            terminal.writeln('\r\nNo matching command found.');
           }
         }
       }
     },
     {
-      command: "clear",
-      description: "Clear the terminal",
-      usage: "",
-      execute: (ctx: Context) => {
-        ctx.terminal.reset();
+      cmd: 'clear',
+      description: 'Clear terminal',
+      execute: async (_args: string[], terminal: Terminal) => {
+        terminal.clear();
       }
     }
   ]
 };
 
-// Handle terminal data input. Input is ignored when a command is executing.
-terminal.onData((data: string) => {
-  if (isExecuting) return;
-  if (data === "\r") {  // Enter key pressed
-    terminal.writeln('');
-    processCommand(currentInput);
-    currentInput = '';
-  } else if (data === "\u007F") {  // Backspace key pressed
-    if (currentInput.length > 0) {
-      currentInput = currentInput.slice(0, -1);
-      terminal.write('\b \b');
+// Recursive command executor
+async function executeCommand(tokens: string[], command: Command, terminal: Terminal): Promise<void> {
+  // If there are tokens, try to match children
+  if (tokens.length > 0 && command.children?.length) {
+    const token = tokens[0];
+    const child = command.children.find(c => c.cmd === token);
+    if (child) {
+      // Recurse with remaining tokens
+      await executeCommand(tokens.slice(1), child, terminal);
+      return;
     }
-  } else {
-    currentInput += data;
-    terminal.write(data);
   }
+  // If execute function exists for this command, run it with tokens as arguments
+  if (command.execute) {
+    await command.execute(tokens, terminal);
+  } else {
+    terminal.writeln('\r\nUnknown or incomplete command.');
+  }
+}
+
+// Terminal initialization and input handling
+function initTerminal(): void {
+  // Create terminal with Solarized Dark theme
+  const theme: Partial<ITheme> = {
+    background: '#002b36',
+    foreground: '#839496',
+    cursor: '#93a1a1'
+  };
+
+  const terminal = new Terminal({
+    theme: theme,
+    cursorBlink: true,
+    convertEol: true
+  });
+  const fitAddon = new FitAddon();
+  terminal.loadAddon(fitAddon);
+  terminal.open(document.getElementById('terminal-container')!);
+  fitAddon.fit();
+
+  // Prompt symbol and input buffer
+  const prompt = '> ';
+  let inputBuffer = '';
+  let cursorPosition = 0;
+  let isExecuting = false; // when a command is executing, disable further user input
+
+  // Helper function to redraw the current input line.
+  function redrawInput() {
+    // Clear current line and reprint prompt and input buffer
+    // \x1b[2K clears the entire line; \r returns carriage.
+    terminal.write('\r\x1b[2K' + prompt + inputBuffer);
+    // Move cursor to the correct position (if not at end)
+    const posFromEnd = inputBuffer.length - cursorPosition;
+    if (posFromEnd > 0) {
+      terminal.write(`\x1b[${posFromEnd}D`);
+    }
+  }
+
+  // Write the initial prompt
+  terminal.write(prompt);
+
+  // Listen to key events from the terminal.
+  terminal.onKey(({ key, domEvent }) => {
+    if (isExecuting) return; // ignore input during execution
+
+    const ev = domEvent;
+    const printable = !ev.altKey && !ev.ctrlKey && !ev.metaKey;
+
+    // Handle special keys
+    if (ev.key === 'Backspace') {
+      if (cursorPosition > 0) {
+        inputBuffer = inputBuffer.slice(0, cursorPosition - 1) + inputBuffer.slice(cursorPosition);
+        cursorPosition--;
+        redrawInput();
+      }
+    } else if (ev.key === 'Delete') {
+      if (cursorPosition < inputBuffer.length) {
+        inputBuffer = inputBuffer.slice(0, cursorPosition) + inputBuffer.slice(cursorPosition + 1);
+        redrawInput();
+      }
+    } else if (ev.key === 'ArrowLeft') {
+      if (cursorPosition > 0) {
+        cursorPosition--;
+        redrawInput();
+      }
+    } else if (ev.key === 'ArrowRight') {
+      if (cursorPosition < inputBuffer.length) {
+        cursorPosition++;
+        redrawInput();
+      }
+    } else if (ev.key === 'Home') {
+      cursorPosition = 0;
+      redrawInput();
+    } else if (ev.key === 'End') {
+      cursorPosition = inputBuffer.length;
+      redrawInput();
+    } else if (ev.key === 'Enter') {
+      // On Enter, execute the command and then print a new prompt.
+      terminal.write('\r\n');
+      const commandLine = inputBuffer.trim();
+      // Clear input buffer and reset cursor position
+      inputBuffer = '';
+      cursorPosition = 0;
+      if (commandLine.length === 0) {
+        terminal.write(prompt);
+        return;
+      }
+      // Tokenize the commandLine by whitespace.
+      const tokens = commandLine.split(/\s+/);
+      isExecuting = true;
+      executeCommand(tokens, rootCommand, terminal)
+        .catch((error: any) => {
+          terminal.writeln(`\r\nError executing command: ${error.message || error}`);
+        })
+        .finally(() => {
+          isExecuting = false;
+          terminal.write('\r\n' + prompt);
+        });
+    } else if (printable && ev.key.length === 1) {
+      // Accept printable characters
+      inputBuffer = inputBuffer.slice(0, cursorPosition) + key + inputBuffer.slice(cursorPosition);
+      cursorPosition++;
+      redrawInput();
+    }
+    // Other non-character keys are ignored.
+  });
+
+  // Adjust terminal size when window is resized.
+  window.addEventListener('resize', () => {
+    fitAddon.fit();
+  });
+}
+
+// Start our terminal when the DOM is loaded.
+document.addEventListener('DOMContentLoaded', () => {
+  initTerminal();
 });
