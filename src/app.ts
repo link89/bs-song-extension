@@ -1,5 +1,4 @@
 // Import necessary xterm modules and the fit addon.
-// Note: External dependencies are injected, so they can be replaced by the dependency injection container.
 import { Terminal, ITheme } from 'xterm';
 import { FitAddon } from '@xterm/addon-fit';
 
@@ -12,10 +11,10 @@ interface Command {
   children?: Command[];
 }
 
-// A simple configuration store
+// A simple configuration store.
 const configStore: { [key: string]: string } = {};
 
-// Define the root commands
+// Define the root commands.
 const rootCommand: Command = {
   description: 'Welcome to song manager',
   children: [
@@ -27,7 +26,6 @@ const rootCommand: Command = {
           cmd: 'ls',
           description: 'List all songs',
           execute: async (_args: string[], terminal: Terminal) => {
-            // Simulate a listing of songs
             terminal.writeln('\r\nSong List:');
             terminal.writeln('1. Song A');
             terminal.writeln('2. Song B');
@@ -45,7 +43,7 @@ const rootCommand: Command = {
             }
             const url = args[0];
             terminal.writeln(`\r\nDownloading song from: ${url} ...`);
-            // Simulate an async download task with delay
+            // Simulate async download delay.
             await new Promise(res => setTimeout(res, 1500));
             terminal.writeln('Download completed.');
           }
@@ -92,31 +90,32 @@ const rootCommand: Command = {
       description: 'Show help information',
       usage: 'help [cmd]',
       execute: async (args: string[], terminal: Terminal) => {
-        // If no argument given, list top-level commands.
         if (args.length === 0) {
           terminal.writeln('\r\nAvailable commands:');
           rootCommand.children?.forEach(child => {
             terminal.writeln(`- ${child.cmd}: ${child.description}`);
           });
         } else {
-          // Show help information for a specific command recursively.
+          // Recursively traverse the command tree.
           function findCommand(tokens: string[], current: Command): Command | undefined {
             if (tokens.length === 0) return current;
             const token = tokens[0];
             const child = current.children?.find(c => c.cmd === token);
-            if (child) {
-              return findCommand(tokens.slice(1), child);
-            }
-            return undefined;
+            return child ? findCommand(tokens.slice(1), child) : undefined;
           }
-          const cmdToFind = args;
-          const found = findCommand(cmdToFind, rootCommand);
+          const found = findCommand(args, rootCommand);
           if (found) {
             terminal.writeln('\r\nHelp:');
             terminal.writeln(`Command: ${found.cmd || '<root>'}`);
             terminal.writeln(`Description: ${found.description}`);
-            if (found.usage) {
+            if (found.execute && found.usage) {
               terminal.writeln(`Usage: ${found.usage}`);
+            }
+            if (found.children && found.children.length > 0) {
+              terminal.writeln('Subcommands:');
+              found.children.forEach(child => {
+                terminal.writeln(`- ${child.cmd}: ${child.description}`);
+              });
             }
           } else {
             terminal.writeln('\r\nNo matching command found.');
@@ -134,19 +133,16 @@ const rootCommand: Command = {
   ]
 };
 
-// Recursive command executor
+// Recursive command executor.
 async function executeCommand(tokens: string[], command: Command, terminal: Terminal): Promise<void> {
-  // If there are tokens, try to match children
   if (tokens.length > 0 && command.children?.length) {
     const token = tokens[0];
     const child = command.children.find(c => c.cmd === token);
     if (child) {
-      // Recurse with remaining tokens
       await executeCommand(tokens.slice(1), child, terminal);
       return;
     }
   }
-  // If execute function exists for this command, run it with tokens as arguments
   if (command.execute) {
     await command.execute(tokens, terminal);
   } else {
@@ -154,9 +150,9 @@ async function executeCommand(tokens: string[], command: Command, terminal: Term
   }
 }
 
-// Terminal initialization and input handling
+// Terminal initialization and input handling.
 function initTerminal(): void {
-  // Create terminal with Solarized Dark theme
+  // Create a terminal with the Solarized Dark theme.
   const theme: Partial<ITheme> = {
     background: '#002b36',
     foreground: '#839496',
@@ -173,100 +169,151 @@ function initTerminal(): void {
   terminal.open(document.getElementById('terminal-container')!);
   fitAddon.fit();
 
-  // Prompt symbol and input buffer
+  // Prompt symbol and input buffer variables.
   const prompt = '> ';
   let inputBuffer = '';
   let cursorPosition = 0;
-  let isExecuting = false; // when a command is executing, disable further user input
+  let isExecuting = false;
 
-  // Helper function to redraw the current input line.
+  // Function to redraw the input line.
   function redrawInput() {
-    // Clear current line and reprint prompt and input buffer
-    // \x1b[2K clears the entire line; \r returns carriage.
     terminal.write('\r\x1b[2K' + prompt + inputBuffer);
-    // Move cursor to the correct position (if not at end)
     const posFromEnd = inputBuffer.length - cursorPosition;
     if (posFromEnd > 0) {
       terminal.write(`\x1b[${posFromEnd}D`);
     }
   }
 
-  // Write the initial prompt
-  terminal.write(prompt);
+  // Handlers for various control sequences:
+  function handlePrintable(ch: string) {
+    inputBuffer = inputBuffer.slice(0, cursorPosition) + ch + inputBuffer.slice(cursorPosition);
+    cursorPosition += ch.length;
+    redrawInput();
+  }
 
-  // Listen to key events from the terminal.
-  terminal.onKey(({ key, domEvent }) => {
-    if (isExecuting) return; // ignore input during execution
-
-    const ev = domEvent;
-    const printable = !ev.altKey && !ev.ctrlKey && !ev.metaKey;
-
-    // Handle special keys
-    if (ev.key === 'Backspace') {
-      if (cursorPosition > 0) {
-        inputBuffer = inputBuffer.slice(0, cursorPosition - 1) + inputBuffer.slice(cursorPosition);
-        cursorPosition--;
-        redrawInput();
-      }
-    } else if (ev.key === 'Delete') {
-      if (cursorPosition < inputBuffer.length) {
-        inputBuffer = inputBuffer.slice(0, cursorPosition) + inputBuffer.slice(cursorPosition + 1);
-        redrawInput();
-      }
-    } else if (ev.key === 'ArrowLeft') {
-      if (cursorPosition > 0) {
-        cursorPosition--;
-        redrawInput();
-      }
-    } else if (ev.key === 'ArrowRight') {
-      if (cursorPosition < inputBuffer.length) {
-        cursorPosition++;
-        redrawInput();
-      }
-    } else if (ev.key === 'Home') {
-      cursorPosition = 0;
+  function handleBackspace() {
+    if (cursorPosition > 0) {
+      inputBuffer = inputBuffer.slice(0, cursorPosition - 1) + inputBuffer.slice(cursorPosition);
+      cursorPosition--;
       redrawInput();
-    } else if (ev.key === 'End') {
-      cursorPosition = inputBuffer.length;
+    }
+  }
+
+  function handleDelete() {
+    if (cursorPosition < inputBuffer.length) {
+      inputBuffer = inputBuffer.slice(0, cursorPosition) + inputBuffer.slice(cursorPosition + 1);
       redrawInput();
-    } else if (ev.key === 'Enter') {
-      // On Enter, execute the command and then print a new prompt.
-      terminal.write('\r\n');
-      const commandLine = inputBuffer.trim();
-      // Clear input buffer and reset cursor position
-      inputBuffer = '';
-      cursorPosition = 0;
-      if (commandLine.length === 0) {
-        terminal.write(prompt);
-        return;
-      }
-      // Tokenize the commandLine by whitespace.
-      const tokens = commandLine.split(/\s+/);
-      isExecuting = true;
-      executeCommand(tokens, rootCommand, terminal)
-        .catch((error: any) => {
-          terminal.writeln(`\r\nError executing command: ${error.message || error}`);
-        })
-        .finally(() => {
-          isExecuting = false;
-          terminal.write('\r\n' + prompt);
-        });
-    } else if (printable && ev.key.length === 1) {
-      // Accept printable characters
-      inputBuffer = inputBuffer.slice(0, cursorPosition) + key + inputBuffer.slice(cursorPosition);
+    }
+  }
+
+  function handleArrowLeft() {
+    if (cursorPosition > 0) {
+      cursorPosition--;
+      redrawInput();
+    }
+  }
+
+  function handleArrowRight() {
+    if (cursorPosition < inputBuffer.length) {
       cursorPosition++;
       redrawInput();
     }
-    // Other non-character keys are ignored.
+  }
+
+  function handleHome() {
+    cursorPosition = 0;
+    redrawInput();
+  }
+
+  function handleEnd() {
+    cursorPosition = inputBuffer.length;
+    redrawInput();
+  }
+
+  function handleEnter() {
+    terminal.write('\r\n');
+    const commandLine = inputBuffer.trim();
+    inputBuffer = '';
+    cursorPosition = 0;
+    if (commandLine.length === 0) {
+      terminal.write(prompt);
+      return;
+    }
+    const tokens = commandLine.split(/\s+/);
+    isExecuting = true;
+    executeCommand(tokens, rootCommand, terminal)
+      .catch((error: any) => {
+        terminal.writeln(`\r\nError executing command: ${error.message || error}`);
+      })
+      .finally(() => {
+        isExecuting = false;
+        terminal.write('\r\n' + prompt);
+      });
+  }
+
+  // Process onData with a custom parser for escape sequences and printable characters.
+  terminal.onData((data: string) => {
+    if (isExecuting) return;
+
+    let i = 0;
+    while (i < data.length) {
+      // Check if the character is an escape sequence initiator.
+      if (data[i] === '\x1b') {
+        // Recognize known escape sequences:
+        if (data.substr(i, 3) === "\x1b[D") { // Arrow Left
+          handleArrowLeft();
+          i += 3;
+          continue;
+        } else if (data.substr(i, 3) === "\x1b[C") { // Arrow Right
+          handleArrowRight();
+          i += 3;
+          continue;
+        } else if (data.substr(i, 3) === "\x1b[A") {
+          // Arrow Up (not implemented) — just skip it.
+          i += 3;
+          continue;
+        } else if (data.substr(i, 3) === "\x1b[B") {
+          // Arrow Down (not implemented) — just skip it.
+          i += 3;
+          continue;
+        } else if (data.substr(i, 4) === "\x1b[3~") { // Delete
+          handleDelete();
+          i += 4;
+          continue;
+        } else if (data.substr(i, 3) === "\x1b[H") { // Home key
+          handleHome();
+          i += 3;
+          continue;
+        } else if (data.substr(i, 3) === "\x1b[F") { // End key
+          handleEnd();
+          i += 3;
+          continue;
+        } else {
+          // Unrecognized escape sequence; skip the ESC character.
+          i++;
+          continue;
+        }
+      } else {
+        // Process normal characters or control characters.
+        const ch = data[i];
+        if (ch === "\r" || ch === "\n") {
+          handleEnter();
+        } else if (ch === "\x7F" || ch === "\x08") { // ASCII Backspace
+          handleBackspace();
+        } else {
+          // Any other printable or Unicode character.
+          handlePrintable(ch);
+        }
+        i++;
+      }
+    }
   });
 
-  // Adjust terminal size when window is resized.
-  window.addEventListener('resize', () => {
-    fitAddon.fit();
-  });
+  window.addEventListener('resize', () => fitAddon.fit());
+  terminal.write(prompt);
 }
 
-// Start our terminal when the DOM is loaded.
+// Start the terminal once the DOM is loaded.
 document.addEventListener('DOMContentLoaded', () => {
   initTerminal();
 });
