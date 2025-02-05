@@ -1,0 +1,16 @@
+/* Ensure html and body cover the full viewport and disable scrolling */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Disables browser scrollbars */
+  background-color: #002b36;
+}
+
+/* Terminal container occupies the full space without triggering scrollbars */
+#terminal-container {
+  height: 100%;
+  width: 100%;
+  padding: 20px; /* Adjust spacing as necessary */
+  box-sizing: border-box; /* Ensures padding is included within the container dimensions */
+}
