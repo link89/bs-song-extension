@@ -12,9 +12,6 @@
     "type": "module",
     "service_worker": "src/background.ts"
   },
-  "side_panel": {
-    "default_path": "src/sidepanel.html"
-  },
   "action": {
     "default_title": "Beat Saber Song Extension"
   },
