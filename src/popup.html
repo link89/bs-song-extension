@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Beat Saber Songs Downloader</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div id="header">
+    <!-- Device selection and controls -->
+    <select id="deviceSelect">
+      <option value="">Select Device</option>
+    </select>
+    <button id="addDevice" title="Add Device">
+      <!-- Using a circle plus icon (could be an SVG or Unicode) -->
+      &#x2795;
+    </button>
+    <button id="refreshDevices" title="Refresh Devices">
+      &#x21bb;
+    </button>
+  </div>
+  <div id="terminalContainer">
+    <!-- xterm.js terminal will be attached here -->
+    <div id="terminal"></div>
+  </div>
+  <!-- Load the popup script as a module -->
+  <script type="module" src="popup.ts"></script>
+</body>
+</html>

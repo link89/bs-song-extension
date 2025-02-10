@@ -1,0 +1,55 @@
+/* Basic styling for the popup window */
+
+/* Ensure a clean, compact layout */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 10px;
+  background-color: #f5f5f5;
+}
+
+/* Header container for device controls */
+#header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* Device selection dropdown styling */
+#deviceSelect {
+  flex-grow: 1;
+  padding: 5px;
+  font-size: 14px;
+}
+
+/* Styling for buttons (Add and Refresh) */
+#addDevice,
+#refreshDevices {
+  margin-left: 5px;
+  padding: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  text-align: center;
+}
+
+/* Hover state for buttons */
+#addDevice:hover,
+#refreshDevices:hover {
+  background-color: #0056b3;
+}
+
+/* Terminal container styling */
+#terminalContainer {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #000;
+  height: 350px;
+  overflow: hidden;
+}

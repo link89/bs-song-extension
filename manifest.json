@@ -4,8 +4,9 @@
   "version": "1.0",
   "description": "Connect to Oculus Quest via ADB to manage custom Beat Saber maps.",
   "permissions": [
+    "usb",
+    "window",
     "downloads",
-    "sidePanel",
     "storage"
   ],
   "background": {

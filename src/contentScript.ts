@@ -1,3 +1,4 @@
+console.log('bs-song-extension: Content script loaded');
 document.addEventListener('click', function(event) {
   let target = event.target as unknown as HTMLElement | null;
   while (target && target.tagName !== 'A') {
@@ -11,7 +12,7 @@ document.addEventListener('click', function(event) {
       
       // Send message to background script
       const bsMapId = href.split('/').pop();
-      chrome.runtime.sendMessage({ event: 'DOWNLOAD_BS_MAP', bsMapId });
+      chrome.runtime.sendMessage({ type: 'DOWNLOAD_BS_MAP', bsMapId });
     }
   }
 });
