@@ -38,7 +38,7 @@ chrome.runtime.onMessage.addListener((message: DownloadEvent, sender, sendRespon
 function createPopupAndSend(message: DownloadEvent) {
   chrome.windows.create({
     url: chrome.runtime.getURL(new URL("popup.html", import.meta.url).pathname),
-    type: "popup",
+    type: "normal",
     // Assume a suitable size for the popup window.
     width: 600,
     height: 500,
