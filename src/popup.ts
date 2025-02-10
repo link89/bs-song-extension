@@ -1,11 +1,13 @@
 import $ from "jquery";
 import { Terminal } from "xterm";
-import "xterm/css/xterm.css";
+import { AdbService } from "./adb";
 
 // Global variables to track device connection and work queue
 interface DownloadTask {
   url: string;
 }
+
+const adbService = new AdbService();
 let workQueue: DownloadTask[] = [];
 let isDeviceConnected: boolean = false;
 

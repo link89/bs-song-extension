@@ -59,22 +59,3 @@ export class AdbService {
 const adbService = new AdbService();
 const BSAVER_API_URL = "https://api.beatsaver.com";
 const CUSTOM_LEVEL_PATH = "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomLevels/";
-
-
-// Listent for message from the content script
-chrome.runtime.onMessage.addListener( async (message, sender, sendResponse) => {
-  if (message.event === "DOWNLOAD_BS_MAP") {
-    console.log("Download event received:", message);
-    const bsMapId = message.bsMapId;
-    // send request to bsaver API to get the download link
-    const response = await fetch(`${BSAVER_API_URL}/maps/id/${bsMapId}`);
-    const data = await response.json();
-    const downloadURL = data.versions[0].downloadURL;
-    // download the map and push it to the device
-    const filename = await adbService.pushUrl(downloadURL, CUSTOM_LEVEL_PATH);
-    // unzip the map
-    await adbService.shell(`cd ${CUSTOM_LEVEL_PATH} && unzip -o ${filename}`);
-    // send response to the content script
-    sendResponse({ status: "success" });
-  }
-});
