@@ -27,7 +27,7 @@ function createPopupWindow(callback: (windowId: number) => void) {
 
 // Listen for messages from content scripts
 // Only forward event if the popup window is not open yet.
-// Otherwise, send the message will be sent from page to the popup.
+// Otherwise, send the message will be sent from page to the popup directly.
 chrome.runtime.onMessage.addListener((message: DownloadEvent, sender, sendResponse) => {
   if (message.type === "DOWNLOAD_BS_MAP") {
     // Check if popup window is already open
