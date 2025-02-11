@@ -4,7 +4,6 @@
 // ensures that the popup window ("Beat Saber Songs Downloader") is open,
 // and forwards the event accordingly.
 
-
 interface DownloadEvent {
   type: "DOWNLOAD_BS_MAP";
   bsMapId: string;
@@ -67,8 +66,8 @@ chrome.windows.onRemoved.addListener((windowId) => {
 });
 
 
-// This function is for testing purposes only.
 // @ts-ignore
-window.sendTestEvent = () => {
-  chrome.runtime.sendMessage({ type: "DOWNLOAD_BS_MAP", bsMapId: "442f8" });
+chrome._sendTestEvent = () => {
+  // @ts-ignore
+  chrome.runtime.onMessage.dispatch({ type: "DOWNLOAD_BS_MAP", bsMapId: "44310" });
 };
