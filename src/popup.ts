@@ -8,7 +8,6 @@ import { DownloadEvent } from "./type";
 const BSAVER_API_URL = "https://api.beatsaver.com";
 const CUSTOM_LEVEL_PATH = "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomLevels/";
 
-
 const adbService = new AdbService();
 const workQueue: DownloadEvent[] = [];
 
@@ -21,6 +20,16 @@ const term = new Terminal({
 });
 term.open(document.getElementById("terminal") as HTMLElement);
 term.write("Welcome to Beast Song Extension\r\n");
+
+// Update the device state label
+function updateDeviceStateLabel() {
+  const $deviceState = $("#deviceState");
+  if (isDeviceConnected && connectedDevice) {
+    $deviceState.text(`Connected to ${connectedDevice.productName || "Unknown Device"}`);
+  } else {
+    $deviceState.text("No Device");
+  }
+}
 
 // Device list update using WebUSB
 async function updateDeviceList() {
@@ -41,29 +50,8 @@ async function updateDeviceList() {
 }
 
 // Attempt to connect to the selected device (simulate ADB connection)
-async function connectToDevice(serialNumber: string) {
-  try {
-    const devices = await navigator.usb.getDevices();
-    const device = devices.find(d => String(d.serialNumber) === serialNumber);
-    if (!device) {
-      term.write("Selected device not found.\r\n");
-      isDeviceConnected = false;
-      connectedDevice = null;
-      return;
-    }
-    // Simulate a connection process (replace with real ADB connection logic)
-    term.write(`Attempting to connect to ${device.productName || "Unknown Device"}...\r\n`);
-    // For simulation, assume connection is always successful after a delay.
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    isDeviceConnected = true;
-    connectedDevice = device;
-    term.write(`Connected to ${device.productName || "Unknown Device"}.\r\n`);
-  } catch (err) {
-    console.error("Device connection failed:", err);
-    isDeviceConnected = false;
-    connectedDevice = null;
-    term.write("Device connection failed.\r\n");
-  }
+async function connectToDevice() {
+  await adbService.connect()
 }
 
 // Add device via navigator.usb.requestDevice
@@ -124,32 +112,13 @@ $(document).ready(() => {
   // Populate device list on load.
   updateDeviceList();
 
-  // Handle device selection change to attempt connection.
-  $("#deviceSelect").on("change", function () {
-    const serialNumber = $(this).val() as string;
-    if (serialNumber) {
-      connectToDevice(serialNumber);
-    } else {
-      term.write("No device selected.\r\n");
-      isDeviceConnected = false;
-      connectedDevice = null;
-    }
+  // Handle Connect button click.
+  $("#connectDevice").on("click", function () {
+    connectToDevice();
   });
 
-  // Handle Add Device button click.
-  $("#addDevice").on("click", function () {
-    addDevice();
-  });
-
-  // Handle Refresh button click.
-  $("#refreshDevices").on("click", function () {
-    term.write("Refreshing device list...\r\n");
-    // Reset connection state on refresh.
-    isDeviceConnected = false;
-    connectedDevice = null;
-    $("#deviceSelect").val("");
-    updateDeviceList();
-  });
+  // Update device state label on load.
+  updateDeviceStateLabel();
 });
 
 // Prompt the user if there are pending tasks when closing the window.

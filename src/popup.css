@@ -23,6 +23,13 @@ body {
   font-size: 14px;
 }
 
+/* Styling for the device state label */
+#deviceState {
+  flex-grow: 1;
+  padding: 5px;
+  font-size: 14px;
+}
+
 /* Styling for buttons (Add and Refresh) */
 #addDevice,
 #refreshDevices {
@@ -39,9 +46,29 @@ body {
   text-align: center;
 }
 
+/* Styling for the connect button */
+#connectDevice {
+  margin-left: 5px;
+  padding: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: rgba(0, 123, 255, 0.5); /* Transparent light blue */
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  text-align: center;
+}
+
 /* Hover state for buttons */
 #addDevice:hover,
 #refreshDevices:hover {
+  background-color: rgba(0, 123, 255, 0.7); /* Slightly darker transparent light blue for hover state */
+}
+
+/* Hover state for the connect button */
+#connectDevice:hover {
   background-color: rgba(0, 123, 255, 0.7); /* Slightly darker transparent light blue for hover state */
 }
 
