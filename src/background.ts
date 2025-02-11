@@ -25,33 +25,24 @@ function createPopupWindow(callback: (windowId: number) => void) {
   });
 }
 
-// Function to send the event message to the popup tab
-function sendMessage(message: DownloadEvent) {
-  chrome.tabs.query({ windowId: popupWindowId! }, (tabs) => {
-    if (tabs.length > 0) {
-      chrome.tabs.sendMessage(tabs[0].id!, message);
-    }
-  });
-}
-
 // Listen for messages from content scripts
+// Only forward event if the popup window is not open yet.
+// Otherwise, send the message will be sent from page to the popup.
 chrome.runtime.onMessage.addListener((message: DownloadEvent, sender, sendResponse) => {
   if (message.type === "DOWNLOAD_BS_MAP") {
     // Check if popup window is already open
     if (popupWindowId !== null) {
       // Try to get the window to check if it still exists
+      // FIXME: is this necessary? We already have the window id.
       chrome.windows.get(popupWindowId, (win) => {
         if (chrome.runtime.lastError || !win) {
           // Popup does not exist. Open a new one.
-          createPopupWindow((windowId) => sendMessage(message));
-        } else {
-          // Popup is open; send the event to the popup.
-          sendMessage(message);
-        }
+          createPopupWindow((windowId) => chrome.runtime.sendMessage(message));
+        } 
       });
     } else {
       // No popup recorded; create one.
-      createPopupWindow((windowId) => sendMessage(message));
+      createPopupWindow((windowId) => chrome.runtime.sendMessage(message));
     }
   }
   return true;

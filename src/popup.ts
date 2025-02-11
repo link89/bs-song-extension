@@ -4,14 +4,11 @@ import { AdbService } from "./adb";
 
 import { DownloadEvent } from "./type";
 // Global variables to track device connection and work queue
-interface DownloadTask {
-  url: string;
-}
 
 const adbService = new AdbService();
-let workQueue: DownloadTask[] = [];
-let isDeviceConnected: boolean = false;
+const workQueue: DownloadEvent[] = [];
 
+let isDeviceConnected: boolean = false;
 let connectedDevice: USBDevice | null = null;
 
 // Initialize the xterm.js terminal
@@ -94,12 +91,12 @@ async function processQueue() {
   
   // Process one task at a time
   const task = workQueue[0];
-  term.write(`Processing DOWNLOAD_BS_MAP task for URL: ${task.url}\r\n`);
+  term.write(`Processing DOWNLOAD_BS_MAP task for URL: ${task.bsMapId}\r\n`);
   
   // Simulate command execution via adb over the connected device.
   // Here we simply simulate a delay and then remove the task.
   await new Promise(resolve => setTimeout(resolve, 1500));
-  term.write(`Task for ${task.url} completed.\r\n`);
+  term.write(`Task for ${task.bsMapId} completed.\r\n`);
   
   // Remove the completed task from the queue.
   workQueue.shift();
@@ -109,10 +106,12 @@ async function processQueue() {
 setInterval(processQueue, 500);
 
 // Listen for messages forwarded from the background service worker
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message && message.type === "DOWNLOAD_BS_MAP" && message.url) {
-    term.write(`Received DOWNLOAD_BS_MAP event for URL: ${message.url}\r\n`);
-    workQueue.push({ url: message.url });
+chrome.runtime.onMessage.addListener((message: DownloadEvent, sender, sendResponse) => {
+  console.log("Message received in popup:", message, sender);
+  
+  if (message && message.type === "DOWNLOAD_BS_MAP" && message.bsMapId) {
+    term.write(`Received DOWNLOAD_BS_MAP event for URL: ${message.bsMapId}\r\n`);
+    workQueue.push(message);
   }
   return true;
 });
