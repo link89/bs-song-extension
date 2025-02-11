@@ -49,26 +49,10 @@ async function updateDeviceList() {
   }
 }
 
-// Attempt to connect to the selected device (simulate ADB connection)
 async function connectToDevice() {
   await adbService.connect()
 }
 
-// Add device via navigator.usb.requestDevice
-async function addDevice() {
-  try {
-    // Define filters as needed; currently allowing all devices by using an empty filter array.
-    const device = await navigator.usb.requestDevice({ filters: [] });
-    if (device) {
-      term.write(`Device ${device.productName || "Unknown Device"} added.\r\n`);
-      // After adding, refresh the device list.
-      updateDeviceList();
-    }
-  } catch (err) {
-    console.error("Device selection cancelled or failed:", err);
-    term.write("No device was selected.\r\n");
-  }
-}
 
 // Process the work queue
 async function processQueue() {

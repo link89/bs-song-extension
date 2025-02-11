@@ -55,7 +55,3 @@ export class AdbService {
     return await adb.subprocess.spawnAndWait(command);
   }
 }
-
-const adbService = new AdbService();
-const BSAVER_API_URL = "https://api.beatsaver.com";
-const CUSTOM_LEVEL_PATH = "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomLevels/";
