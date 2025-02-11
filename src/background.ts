@@ -4,10 +4,7 @@
 // ensures that the popup window ("Beat Saber Songs Downloader") is open,
 // and forwards the event accordingly.
 
-interface DownloadEvent {
-  type: "DOWNLOAD_BS_MAP";
-  bsMapId: string;
-}
+import { DownloadEvent } from "./type";
 
 // Global variable to track the popup window's id.
 let popupWindowId: number | null = null;
@@ -28,11 +25,13 @@ function createPopupWindow(callback: (windowId: number) => void) {
   });
 }
 
-// Function to send the event message
+// Function to send the event message to the popup tab
 function sendMessage(message: DownloadEvent) {
-  setTimeout(() => {
-    chrome.runtime.sendMessage(message);
-  }, 500);
+  chrome.tabs.query({ windowId: popupWindowId! }, (tabs) => {
+    if (tabs.length > 0) {
+      chrome.tabs.sendMessage(tabs[0].id!, message);
+    }
+  });
 }
 
 // Listen for messages from content scripts

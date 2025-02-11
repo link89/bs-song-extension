@@ -2,6 +2,7 @@ import $ from "jquery";
 import { Terminal } from "xterm";
 import { AdbService } from "./adb";
 
+import { DownloadEvent } from "./type";
 // Global variables to track device connection and work queue
 interface DownloadTask {
   url: string;
@@ -18,7 +19,7 @@ const term = new Terminal({
   cursorBlink: true,
 });
 term.open(document.getElementById("terminal") as HTMLElement);
-term.write("Terminal initialized...\r\n");
+term.write("Welcome to Beast Song Extension\r\n");
 
 // Device list update using WebUSB
 async function updateDeviceList() {
@@ -83,6 +84,7 @@ async function addDevice() {
 // Process the work queue
 async function processQueue() {
   if (workQueue.length === 0) return;
+  term.write(`Processing ${workQueue.length} tasks...\n`);
   
   // Check if device is connected before processing any tasks
   if (!isDeviceConnected) {
@@ -103,8 +105,8 @@ async function processQueue() {
   workQueue.shift();
 }
 
-// Consumer loop to check and process tasks every 2 seconds
-setInterval(processQueue, 2000);
+// Consumer loop to check and process tasks;
+setInterval(processQueue, 500);
 
 // Listen for messages forwarded from the background service worker
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
