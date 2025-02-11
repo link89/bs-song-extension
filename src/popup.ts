@@ -5,6 +5,10 @@ import { AdbService } from "./adb";
 import { DownloadEvent } from "./type";
 // Global variables to track device connection and work queue
 
+const BSAVER_API_URL = "https://api.beatsaver.com";
+const CUSTOM_LEVEL_PATH = "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomLevels/";
+
+
 const adbService = new AdbService();
 const workQueue: DownloadEvent[] = [];
 
