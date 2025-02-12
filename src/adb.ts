@@ -7,11 +7,13 @@ export class AdbService {
   // Ref: https://docs.tangoapp.dev/tango/daemon/
   private manager: AdbDaemonWebUsbDeviceManager;
   public observer: AdbDaemonWebUsbDeviceObserver;
+  private credentialStore: AdbWebCredentialStore;
   private adb?: Adb;
   
   constructor() {
     this.manager = AdbDaemonWebUsbDeviceManager.BROWSER!;
     this.observer = this.manager.trackDevices();
+    this.credentialStore = new AdbWebCredentialStore();
     this.observer.onDeviceAdd((devices) => {
       console.log("Device added", devices);
     });
@@ -23,22 +25,24 @@ export class AdbService {
     });
   }
   
-
   public async connect(): Promise<Adb> {
     if (this.adb) return this.adb;
     const device = await this.manager.requestDevice();
     if (device) {
       const connection = await device.connect();
-      const credentialStore = new AdbWebCredentialStore();
+      console.log("Device connected", device);
       const transport = await AdbDaemonTransport.authenticate({
         serial: device.serial,
         connection,
-        credentialStore,
+        credentialStore: this.credentialStore,
       })
       transport.disconnected.then(() => {
+        console.log("Device disconnected", device);
         this.adb = undefined;
       });
       this.adb = new Adb(transport);
+      // test connection
+      const ret = await this.adb.subprocess.spawnAndWait("echo connected");
       return this.adb;
     }
     throw new Error("No device found");

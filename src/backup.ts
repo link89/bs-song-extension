@@ -16,6 +16,7 @@ export class AdbService {
     if (this.adb) return this.adb;
     const device = await this.manager.requestDevice();
     if (device) {
+      console.log("Device connected", device);
       const connection = await device.connect();
       const credentialStore = new AdbWebCredentialStore();
       const transport = await AdbDaemonTransport.authenticate({
@@ -23,10 +24,10 @@ export class AdbService {
         connection,
         credentialStore,
       })
-      transport.disconnected.then(() => {
-        this.adb = undefined;
-      });
       this.adb = new Adb(transport);
+      const ret = await this.adb.subprocess.spawnAndWait("echo connected");
+      console.log("Connected to device:", ret);
+
       return this.adb;
     }
     throw new Error("No device found");
