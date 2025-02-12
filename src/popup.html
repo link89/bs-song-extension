@@ -1,25 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Beat Saber Songs Downloader</title>
-  <link rel="stylesheet" href="vendor/xterm.css" />
-  <link rel="stylesheet" href="popup.css" />
-</head>
-<body>
-  <div id="header">
-    <!-- Device state label -->
-    <label id="deviceState">No Device</label>
-    <!-- Connect button -->
-    <button id="connectDevice" title="Connect Device">
-      &#x1F50C; <!-- Connect icon (could be an SVG or Unicode) -->
-    </button>
-  </div>
-  <div id="terminalContainer">
-    <!-- xterm.js terminal will be attached here -->
-    <div id="terminal"></div>
-  </div>
-  <!-- Load the popup script as a module -->
-  <script type="module" src="popup.ts"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Beat Saber Song Manager</title>
+    <!-- Include Material UI fonts and styles if needed -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="popup.tsx"></script>
+  </body>
 </html>
