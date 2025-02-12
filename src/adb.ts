@@ -1,4 +1,4 @@
-import { AdbDaemonWebUsbDeviceManager } from "@yume-chan/adb-daemon-webusb";
+import { AdbDaemonWebUsbDeviceManager, AdbDaemonWebUsbDeviceObserver } from "@yume-chan/adb-daemon-webusb";
 import { Adb, AdbDaemonTransport } from "@yume-chan/adb";
 import AdbWebCredentialStore from "@yume-chan/adb-credential-web";
 
@@ -6,11 +6,23 @@ import AdbWebCredentialStore from "@yume-chan/adb-credential-web";
 export class AdbService {
   // Ref: https://docs.tangoapp.dev/tango/daemon/
   private manager: AdbDaemonWebUsbDeviceManager;
+  public observer: AdbDaemonWebUsbDeviceObserver;
   private adb?: Adb;
   
   constructor() {
     this.manager = AdbDaemonWebUsbDeviceManager.BROWSER!;
+    this.observer = this.manager.trackDevices();
+    this.observer.onDeviceAdd((devices) => {
+      console.log("Device added", devices);
+    });
+    this.observer.onDeviceRemove((devices) => {
+      console.log("Device removed", devices);
+    });
+    this.observer.onListChange((devices) => {
+      console.log("Device list changed", devices);
+    });
   }
+  
 
   public async connect(): Promise<Adb> {
     if (this.adb) return this.adb;
