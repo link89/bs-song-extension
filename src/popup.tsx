@@ -231,11 +231,13 @@ const Popup: React.FC = () => {
 
       {/* Device Section */}
       <Paper elevation={3} style={{ padding: 16, marginBottom: 16 }}>
-        <Grid container alignItems="center" spacing={2}>
-          <Grid item>
-            <Typography variant="subtitle1">{deviceStatus}</Typography>
+        <Grid container>
+          <Grid item xs={6}>
+            <Typography variant="subtitle1">
+              {deviceStatus}
+            </Typography>
           </Grid>
-          <Grid item>
+          <Grid item xs={6} style={{ textAlign: "right" }}>
             <Button variant="contained" onClick={handleConnect}>
               Connect Device
             </Button>
@@ -406,7 +408,7 @@ const Popup: React.FC = () => {
           </AccordionSummary>
           <AccordionDetails>
             <Grid container spacing={2}>
-              <Grid item xs={4}>
+              <Grid item xs={6}>
                 <FormControl fullWidth size="small" variant="outlined">
                   <InputLabel>Default Playlist</InputLabel>
                   <Select
@@ -420,7 +422,7 @@ const Popup: React.FC = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={12}>
                 {editingSongPath ? (
                   <TextField
                     label="Custom Song Path"
@@ -442,15 +444,25 @@ const Popup: React.FC = () => {
                     }}
                   />
                 ) : (
-                  <Box display="flex" alignItems="center">
-                    <Typography>Song Path: {customSongPath}</Typography>
-                    <IconButton onClick={() => setEditingSongPath(true)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
+                  <TextField
+                    label="Custom Song Path"
+                    size="small"
+                    variant="outlined"
+                    value={customSongPath}
+                    InputProps={{
+                      readOnly: true,
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => setEditingSongPath(true)}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
                 )}
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={12}>
                 {editingPlaylistPath ? (
                   <TextField
                     label="Custom Playlists Path"
@@ -472,12 +484,22 @@ const Popup: React.FC = () => {
                     }}
                   />
                 ) : (
-                  <Box display="flex" alignItems="center">
-                    <Typography>Playlists Path: {customPlaylistsPath}</Typography>
-                    <IconButton onClick={() => setEditingPlaylistPath(true)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
+                  <TextField
+                    label="Custom Playlists Path"
+                    size="small"
+                    variant="outlined"
+                    value={customPlaylistsPath}
+                    InputProps={{
+                      readOnly: true,
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => setEditingPlaylistPath(true)}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
                 )}
               </Grid>
             </Grid>
