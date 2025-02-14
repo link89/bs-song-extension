@@ -82,7 +82,7 @@ const Popup: React.FC = () => {
 
   // Settings state
   const [defaultPlaylist, setDefaultPlaylist] = useState("");
-  const [customSongPath, setCustomSongPath] = useState("/sdcard/Music/");
+  const [customSongPath, setCustomSongPath] = useState("/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels");
   const [customPlaylistsPath, setCustomPlaylistsPath] = useState("/sdcard/Playlists/");
   const [editingSongPath, setEditingSongPath] = useState(false);
   const [editingPlaylistPath, setEditingPlaylistPath] = useState(false);
@@ -177,9 +177,8 @@ const Popup: React.FC = () => {
     closeSongMenu();
   };
 
-  const openSongSaveMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const openSongSaveSubMenu = (event: React.MouseEvent<HTMLElement>) => {
     setSongSaveMenuAnchor(event.currentTarget);
-    closeSongMenu();
   };
 
   const closeSongSaveMenu = () => {
@@ -369,9 +368,19 @@ const Popup: React.FC = () => {
             </Box>
             <Menu anchorEl={songMenuAnchor} open={Boolean(songMenuAnchor)} onClose={closeSongMenu}>
               <MenuItem onClick={handleRemoveSong}>Remove</MenuItem>
-              <MenuItem onClick={openSongSaveMenu}>Save to Playlist</MenuItem>
+              <MenuItem 
+                onMouseEnter={openSongSaveSubMenu} 
+              >
+                Save to Playlist
+              </MenuItem>
             </Menu>
-            <Menu anchorEl={songSaveMenuAnchor} open={Boolean(songSaveMenuAnchor)} onClose={closeSongSaveMenu}>
+            <Menu
+              anchorEl={songSaveMenuAnchor}
+              open={Boolean(songSaveMenuAnchor)}
+              onClose={closeSongSaveMenu}
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            >
               {playlists.map(pl => (
                 <MenuItem key={pl.id} onClick={() => handleSaveSongToPlaylist(pl.id)}>
                   {pl.name}
