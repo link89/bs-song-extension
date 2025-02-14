@@ -407,7 +407,7 @@ const Popup: React.FC = () => {
           <AccordionDetails>
             <Grid container spacing={2}>
               <Grid item xs={4}>
-                <FormControl fullWidth size="small">
+                <FormControl fullWidth size="small" variant="outlined">
                   <InputLabel>Default Playlist</InputLabel>
                   <Select
                     label="Default Playlist"
@@ -425,13 +425,18 @@ const Popup: React.FC = () => {
                   <TextField
                     label="Custom Song Path"
                     size="small"
+                    variant="outlined"
                     value={customSongPath}
                     onChange={(e) => setCustomSongPath(e.target.value)}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton onClick={() => setEditingSongPath(false)}><CheckIcon /></IconButton>
-                          <IconButton onClick={() => setEditingSongPath(false)}><CloseIcon /></IconButton>
+                          <IconButton onClick={() => setEditingSongPath(false)}>
+                            <CheckIcon />
+                          </IconButton>
+                          <IconButton onClick={() => setEditingSongPath(false)}>
+                            <CloseIcon />
+                          </IconButton>
                         </InputAdornment>
                       )
                     }}
@@ -450,13 +455,18 @@ const Popup: React.FC = () => {
                   <TextField
                     label="Custom Playlists Path"
                     size="small"
+                    variant="outlined"
                     value={customPlaylistsPath}
                     onChange={(e) => setCustomPlaylistsPath(e.target.value)}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton onClick={() => setEditingPlaylistPath(false)}><CheckIcon /></IconButton>
-                          <IconButton onClick={() => setEditingPlaylistPath(false)}><CloseIcon /></IconButton>
+                          <IconButton onClick={() => setEditingPlaylistPath(false)}>
+                            <CheckIcon />
+                          </IconButton>
+                          <IconButton onClick={() => setEditingPlaylistPath(false)}>
+                            <CloseIcon />
+                          </IconButton>
                         </InputAdornment>
                       )
                     }}
