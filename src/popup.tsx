@@ -23,6 +23,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Paper,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -245,131 +246,131 @@ const Popup: React.FC = () => {
       {/* Songs and Playlists Section */}
       <Grid container spacing={2}>
         {/* Playlists List */}
-        <Grid item xs={4}>
-          <Box mb={1} display="flex" alignItems="center">
-            <TextField
-              label="Filter Playlists"
-              size="small"
-              value={playlistFilter}
-              onChange={(e) => setPlaylistFilter(e.target.value)}
-              style={{ flexGrow: 1, marginRight: 8 }}
-            />
-            <IconButton onClick={() => setCreateDialogOpen(true)}>
-              <AddIcon />
-            </IconButton>
-            <IconButton onClick={fetchPlaylists}>
-              <RefreshIcon />
-            </IconButton>
-          </Box>
-          <Box border={1} borderRadius={4} p={1} style={{ maxHeight: 300, overflowY: "auto" }}>
-            {playlists
-              .filter(p => p.name.toLowerCase().includes(playlistFilter.toLowerCase()))
-              .map(playlist => (
-                <Box
-                  key={playlist.id}
-                  p={1}
-                  mb={1}
-                  border={1}
-                  borderRadius={4}
-                  onClick={() => handleSelectPlaylist(playlist)}
-                  sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
-                >
-                  <Box mr={2}>
-                    {playlist.coverUrl ? (
-                      <img src={playlist.coverUrl} alt="cover" width={40} height={40} />
-                    ) : (
-                      <Box width={40} height={40} bgcolor="grey.300" />
-                    )}
+        <Grid item xs={6}>
+          <Paper elevation={3} style={{ padding: 16 }}>
+            <Box mb={1} display="flex" alignItems="center">
+              <TextField
+                label="Filter Playlists"
+                size="small"
+                value={playlistFilter}
+                onChange={(e) => setPlaylistFilter(e.target.value)}
+                style={{ flexGrow: 1, marginRight: 8 }}
+              />
+              <IconButton onClick={() => setCreateDialogOpen(true)}>
+                <AddIcon />
+              </IconButton>
+              <IconButton onClick={fetchPlaylists}>
+                <RefreshIcon />
+              </IconButton>
+            </Box>
+            <Box style={{ maxHeight: 300, overflowY: "auto" }}>
+              {playlists
+                .filter(p => p.name.toLowerCase().includes(playlistFilter.toLowerCase()))
+                .map(playlist => (
+                  <Box
+                    key={playlist.id}
+                    p={1}
+                    mb={1}
+                    onClick={() => handleSelectPlaylist(playlist)}
+                    sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                  >
+                    <Box mr={2}>
+                      {playlist.coverUrl ? (
+                        <img src={playlist.coverUrl} alt="cover" width={40} height={40} />
+                      ) : (
+                        <Box width={40} height={40} bgcolor="grey.300" />
+                      )}
+                    </Box>
+                    <Box flexGrow={1}>
+                      <Typography variant="subtitle1">{playlist.name}</Typography>
+                      <Typography variant="caption">{playlist.creator}</Typography>
+                    </Box>
+                    <IconButton onClick={(e) => { e.stopPropagation(); openPlaylistMenu(e, playlist.id); }}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
                   </Box>
-                  <Box flexGrow={1}>
-                    <Typography variant="subtitle1">{playlist.name}</Typography>
-                    <Typography variant="caption">{playlist.creator}</Typography>
-                  </Box>
-                  <IconButton onClick={(e) => { e.stopPropagation(); openPlaylistMenu(e, playlist.id); }}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              ))}
-          </Box>
-          <Menu anchorEl={playlistMenuAnchor} open={Boolean(playlistMenuAnchor)} onClose={closePlaylistMenu}>
-            <MenuItem onClick={handleDeletePlaylist}>Delete</MenuItem>
-          </Menu>
+                ))}
+            </Box>
+            <Menu anchorEl={playlistMenuAnchor} open={Boolean(playlistMenuAnchor)} onClose={closePlaylistMenu}>
+              <MenuItem onClick={handleDeletePlaylist}>Delete</MenuItem>
+            </Menu>
+          </Paper>
         </Grid>
 
         {/* Songs List */}
-        <Grid item xs={8}>
-          <Box mb={1} display="flex" alignItems="center">
-            <TextField
-              label="Filter Songs"
-              size="small"
-              value={songsFilter}
-              onChange={(e) => setSongsFilter(e.target.value)}
-              style={{ flexGrow: 1, marginRight: 8 }}
-            />
-            <IconButton onClick={() => selectedPlaylist && fetchSongs(selectedPlaylist.id)}>
-              <RefreshIcon />
-            </IconButton>
-          </Box>
-          <Box border={1} borderRadius={4} p={1} style={{ maxHeight: 300, overflowY: "auto" }}>
-            {selectedPlaylist ? (
-              <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="songs">
-                  {(provided) => (
-                    <div ref={provided.innerRef} {...provided.droppableProps}>
-                      {songs
-                        .filter(s => s.name.toLowerCase().includes(songsFilter.toLowerCase()))
-                        .map((song, index) => (
-                          <Draggable key={song.id} draggableId={song.id} index={index}>
-                            {(provided) => (
-                              <Box
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                p={1}
-                                mb={1}
-                                border={1}
-                                borderRadius={4}
-                                display="flex"
-                                alignItems="center"
-                              >
-                                <Box mr={2}>
-                                  {song.coverUrl ? (
-                                    <img src={song.coverUrl} alt="cover" width={40} height={40} />
-                                  ) : (
-                                    <Box width={40} height={40} bgcolor="grey.300" />
-                                  )}
+        <Grid item xs={6}>
+          <Paper elevation={3} style={{ padding: 16 }}>
+            <Box mb={1} display="flex" alignItems="center">
+              <TextField
+                label="Filter Songs"
+                size="small"
+                value={songsFilter}
+                onChange={(e) => setSongsFilter(e.target.value)}
+                style={{ flexGrow: 1, marginRight: 8 }}
+              />
+              <IconButton onClick={() => selectedPlaylist && fetchSongs(selectedPlaylist.id)}>
+                <RefreshIcon />
+              </IconButton>
+            </Box>
+            <Box style={{ maxHeight: 300, overflowY: "auto" }}>
+              {selectedPlaylist ? (
+                <DragDropContext onDragEnd={onDragEnd}>
+                  <Droppable droppableId="songs">
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps}>
+                        {songs
+                          .filter(s => s.name.toLowerCase().includes(songsFilter.toLowerCase()))
+                          .map((song, index) => (
+                            <Draggable key={song.id} draggableId={song.id} index={index}>
+                              {(provided) => (
+                                <Box
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  p={1}
+                                  mb={1}
+                                  display="flex"
+                                  alignItems="center"
+                                >
+                                  <Box mr={2}>
+                                    {song.coverUrl ? (
+                                      <img src={song.coverUrl} alt="cover" width={40} height={40} />
+                                    ) : (
+                                      <Box width={40} height={40} bgcolor="grey.300" />
+                                    )}
+                                  </Box>
+                                  <Box flexGrow={1}>
+                                    <Typography variant="subtitle1">{song.name}</Typography>
+                                    <Typography variant="caption">{song.artist}</Typography>
+                                  </Box>
+                                  <IconButton onClick={(e) => { e.stopPropagation(); openSongMenu(e, song.id); }}>
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
                                 </Box>
-                                <Box flexGrow={1}>
-                                  <Typography variant="subtitle1">{song.name}</Typography>
-                                  <Typography variant="caption">{song.artist}</Typography>
-                                </Box>
-                                <IconButton onClick={(e) => { e.stopPropagation(); openSongMenu(e, song.id); }}>
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                              </Box>
-                            )}
-                          </Draggable>
-                        ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            ) : (
-              <Typography variant="body2">No playlist selected</Typography>
-            )}
-          </Box>
-          <Menu anchorEl={songMenuAnchor} open={Boolean(songMenuAnchor)} onClose={closeSongMenu}>
-            <MenuItem onClick={handleRemoveSong}>Remove</MenuItem>
-            <MenuItem onClick={openSongSaveMenu}>Save to Playlist</MenuItem>
-          </Menu>
-          <Menu anchorEl={songSaveMenuAnchor} open={Boolean(songSaveMenuAnchor)} onClose={closeSongSaveMenu}>
-            {playlists.map(pl => (
-              <MenuItem key={pl.id} onClick={() => handleSaveSongToPlaylist(pl.id)}>
-                {pl.name}
-              </MenuItem>
-            ))}
-          </Menu>
+                              )}
+                            </Draggable>
+                          ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              ) : (
+                <Typography variant="body2">No playlist selected</Typography>
+              )}
+            </Box>
+            <Menu anchorEl={songMenuAnchor} open={Boolean(songMenuAnchor)} onClose={closeSongMenu}>
+              <MenuItem onClick={handleRemoveSong}>Remove</MenuItem>
+              <MenuItem onClick={openSongSaveMenu}>Save to Playlist</MenuItem>
+            </Menu>
+            <Menu anchorEl={songSaveMenuAnchor} open={Boolean(songSaveMenuAnchor)} onClose={closeSongSaveMenu}>
+              {playlists.map(pl => (
+                <MenuItem key={pl.id} onClick={() => handleSaveSongToPlaylist(pl.id)}>
+                  {pl.name}
+                </MenuItem>
+              ))}
+            </Menu>
+          </Paper>
         </Grid>
       </Grid>
 
