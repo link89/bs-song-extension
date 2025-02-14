@@ -83,7 +83,7 @@ const Popup: React.FC = () => {
   // Settings state
   const [defaultPlaylist, setDefaultPlaylist] = useState("");
   const [customSongPath, setCustomSongPath] = useState("/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels");
-  const [customPlaylistsPath, setCustomPlaylistsPath] = useState("/sdcard/Playlists/");
+  const [customPlaylistsPath, setCustomPlaylistsPath] = useState("/sdcard/ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists");
   const [editingSongPath, setEditingSongPath] = useState(false);
   const [editingPlaylistPath, setEditingPlaylistPath] = useState(false);
 
