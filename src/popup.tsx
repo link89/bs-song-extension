@@ -230,7 +230,7 @@ const Popup: React.FC = () => {
       </Typography>
 
       {/* Device Section */}
-      <Box mb={3} p={2} border={1} borderRadius={4}>
+      <Paper elevation={3} style={{ padding: 16, marginBottom: 16 }}>
         <Grid container alignItems="center" spacing={2}>
           <Grid item>
             <Typography variant="subtitle1">{deviceStatus}</Typography>
@@ -241,13 +241,16 @@ const Popup: React.FC = () => {
             </Button>
           </Grid>
         </Grid>
-      </Box>
+      </Paper>
 
       {/* Songs and Playlists Section */}
       <Grid container spacing={2}>
         {/* Playlists List */}
         <Grid item xs={6}>
           <Paper elevation={3} style={{ padding: 16 }}>
+            <Typography variant="h6" gutterBottom>
+              Playlists
+            </Typography>
             <Box mb={1} display="flex" alignItems="center">
               <TextField
                 label="Filter Playlists"
@@ -263,7 +266,7 @@ const Popup: React.FC = () => {
                 <RefreshIcon />
               </IconButton>
             </Box>
-            <Box style={{ maxHeight: 300, overflowY: "auto" }}>
+            <Box style={{ minHeight: 300, overflowY: "auto" }}>
               {playlists
                 .filter(p => p.name.toLowerCase().includes(playlistFilter.toLowerCase()))
                 .map(playlist => (
@@ -300,6 +303,9 @@ const Popup: React.FC = () => {
         {/* Songs List */}
         <Grid item xs={6}>
           <Paper elevation={3} style={{ padding: 16 }}>
+            <Typography variant="h6" gutterBottom>
+              Songs
+            </Typography>
             <Box mb={1} display="flex" alignItems="center">
               <TextField
                 label="Filter Songs"
@@ -312,7 +318,7 @@ const Popup: React.FC = () => {
                 <RefreshIcon />
               </IconButton>
             </Box>
-            <Box style={{ maxHeight: 300, overflowY: "auto" }}>
+            <Box style={{ minHeight: 300, overflowY: "auto" }}>
               {selectedPlaylist ? (
                 <DragDropContext onDragEnd={onDragEnd}>
                   <Droppable droppableId="songs">
