@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ReactDOM from "react-dom";
 import {
   AppBar,
@@ -76,6 +76,7 @@ const Popup: React.FC = () => {
   const [songMenuAnchor, setSongMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuSongId, setMenuSongId] = useState<string>("");
   const [songSaveMenuAnchor, setSongSaveMenuAnchor] = useState<null | HTMLElement>(null);
+  const songSaveMenuRef = useRef<HTMLDivElement>(null);
 
   // Log state
   const [logs, setLogs] = useState<string[]>(["App started."]);
@@ -222,6 +223,22 @@ const Popup: React.FC = () => {
     setNewPlaylistCover("");
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (songSaveMenuRef.current && !songSaveMenuRef.current.contains(event.target as Node)) {
+        closeSongSaveMenu();
+      }
+    };
+    if (songSaveMenuAnchor) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [songSaveMenuAnchor]);
+
   return (
     <Container maxWidth="lg" style={{ marginTop: 20 }}>
       <Typography variant="h4" gutterBottom>
@@ -249,7 +266,7 @@ const Popup: React.FC = () => {
         {/* Playlists List */}
         <Grid item xs={6}>
           <Paper elevation={3} style={{ padding: 16 }}>
-            <Typography variant="h6" gutterBottom>
+            <Typography gutterBottom>
               Playlists
             </Typography>
             <Box mb={1} display="flex" alignItems="center">
@@ -304,7 +321,7 @@ const Popup: React.FC = () => {
         {/* Songs List */}
         <Grid item xs={6}>
           <Paper elevation={3} style={{ padding: 16 }}>
-            <Typography variant="h6" gutterBottom>
+            <Typography gutterBottom>
               Songs
             </Typography>
             <Box mb={1} display="flex" alignItems="center">
@@ -380,6 +397,7 @@ const Popup: React.FC = () => {
               onClose={closeSongSaveMenu}
               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
               transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+              PaperProps={{ ref: songSaveMenuRef }}  // Added ref to capture clicks outside
             >
               {playlists.map(pl => (
                 <MenuItem key={pl.id} onClick={() => handleSaveSongToPlaylist(pl.id)}>
