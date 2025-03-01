@@ -47,6 +47,8 @@ export class AdbService {
     }
     throw new Error("No device found");
   }
+
+
   
   public async pushUrl(url: string, deviceFilePath: string): Promise<string> {
     const adb = await this.connect();

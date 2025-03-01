@@ -142,14 +142,12 @@ const Popup: React.FC = () => {
   // Device connect button handler
   const handleConnect = async () => {
     try {
-      await adbService.connect();
-      setIsConnected(true);
-      setDeviceStatus("Connected (Simulated)");
-      addLog("Device connected via adbService.");
-      // After connection, fetch playlists automatically.
+      const adb = await adbService.connect();
+      console.log(adb);
+      
       fetchPlaylists();
     } catch (err) {
-      addLog("Failed to connect device.");
+      addLog(`Error connecting to device: ${err.message}`);
     }
   };
 
@@ -494,7 +492,7 @@ const Popup: React.FC = () => {
       </Dialog>
 
       {/* Settings Modal */}
-      <Dialog open={isSettingsModalOpen} onClose={handleSettingsCancel}>
+      <Dialog open={isSettingsModalOpen} onClose={handleSettingsCancel} fullWidth maxWidth="md">
         <DialogTitle>Settings</DialogTitle>
         <DialogContent>
           <Box mt={1}>
