@@ -439,99 +439,112 @@ const Popup: React.FC = () => {
           </AccordionSummary>
           <AccordionDetails>
             <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <FormControl fullWidth size="small" variant="outlined">
-                  <InputLabel>Default Playlist</InputLabel>
-                  <Select
-                    label="Default Playlist"
-                    value={defaultPlaylist}
-                    onChange={(e) => setDefaultPlaylist(e.target.value)}
-                  >
-                    {playlists.map(pl => (
-                      <MenuItem key={pl.id} value={pl.id}>{pl.name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+              <Grid container item xs={12} alignItems="center">
+                <Grid item xs={4}>
+                  <Typography variant="body1">Default Playlist</Typography>
+                </Grid>
+                <Grid item xs={8}>
+                  <FormControl fullWidth size="small" variant="outlined">
+                    <Select
+                      value={defaultPlaylist}
+                      onChange={(e) => setDefaultPlaylist(e.target.value)}
+                    >
+                      {playlists.map(pl => (
+                        <MenuItem key={pl.id} value={pl.id}>{pl.name}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
               </Grid>
-              <Grid item xs={12}>
-                {editingSongPath ? (
-                  <TextField
-                    label="Custom Song Path"
-                    size="small"
-                    variant="outlined"
-                    value={customSongPath}
-                    onChange={(e) => setCustomSongPath(e.target.value)}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton onClick={() => setEditingSongPath(false)}>
-                            <CheckIcon />
-                          </IconButton>
-                          <IconButton onClick={() => setEditingSongPath(false)}>
-                            <CloseIcon />
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }}
-                  />
-                ) : (
-                  <TextField
-                    label="Custom Song Path"
-                    size="small"
-                    variant="outlined"
-                    value={customSongPath}
-                    InputProps={{
-                      readOnly: true,
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton onClick={() => setEditingSongPath(true)}>
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
+              <Grid container item xs={12} alignItems="center">
+                <Grid item xs={4}>
+                  <Typography variant="body1">Custom Song Path</Typography>
+                </Grid>
+                <Grid item xs={8}>
+                  {editingSongPath ? (
+                    <TextField
+                      fullWidth
+                      size="small"
+                      variant="outlined"
+                      value={customSongPath}
+                      onChange={(e) => setCustomSongPath(e.target.value)}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setEditingSongPath(false)}>
+                              <CheckIcon />
+                            </IconButton>
+                            <IconButton onClick={() => setEditingSongPath(false)}>
+                              <CloseIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  ) : (
+                    <TextField
+                      fullWidth
+                      size="small"
+                      variant="outlined"
+                      value={customSongPath}
+                      InputProps={{
+                        readOnly: true,
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setEditingSongPath(true)}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                </Grid>
               </Grid>
-              <Grid item xs={12}>
-                {editingPlaylistPath ? (
-                  <TextField
-                    label="Custom Playlists Path"
-                    size="small"
-                    variant="outlined"
-                    value={customPlaylistsPath}
-                    onChange={(e) => setCustomPlaylistsPath(e.target.value)}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton onClick={() => setEditingPlaylistPath(false)}>
-                            <CheckIcon />
-                          </IconButton>
-                          <IconButton onClick={() => setEditingPlaylistPath(false)}>
-                            <CloseIcon />
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }}
-                  />
-                ) : (
-                  <TextField
-                    label="Custom Playlists Path"
-                    size="small"
-                    variant="outlined"
-                    value={customPlaylistsPath}
-                    InputProps={{
-                      readOnly: true,
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton onClick={() => setEditingPlaylistPath(true)}>
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
+              <Grid container item xs={12} alignItems="center">
+                <Grid item xs={4}>
+                  <Typography variant="body1">Custom Playlists Path</Typography>
+                </Grid>
+                <Grid item xs={8}>
+                  {editingPlaylistPath ? (
+                    <TextField
+                      fullWidth
+                      size="small"
+                      variant="outlined"
+                      value={customPlaylistsPath}
+                      onChange={(e) => setCustomPlaylistsPath(e.target.value)}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setEditingPlaylistPath(false)}>
+                              <CheckIcon />
+                            </IconButton>
+                            <IconButton onClick={() => setEditingPlaylistPath(false)}>
+                              <CloseIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  ) : (
+                    <TextField
+                      fullWidth
+                      size="small"
+                      variant="outlined"
+                      value={customPlaylistsPath}
+                      InputProps={{
+                        readOnly: true,
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setEditingPlaylistPath(true)}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                </Grid>
               </Grid>
             </Grid>
           </AccordionDetails>
