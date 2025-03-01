@@ -9,13 +9,32 @@ import { DownloadEvent } from "./type";
 // Global variable to track the popup window's id.
 let popupWindowId: number | null = null;
 
-// Function to create the popup window
+// Updated createPopupWindow to bring an existing window to the foreground.
 function createPopupWindow(callback: (windowId: number) => void) {
+  if (popupWindowId !== null) {
+    chrome.windows.get(popupWindowId, (win) => {
+      if (!chrome.runtime.lastError && win) {
+        // Bring the existing window to the foreground.
+        chrome.windows.update(popupWindowId!, { focused: true }, () => {
+          callback(popupWindowId!);
+        });
+      } else {
+        // Window not found, reset and create new.
+        popupWindowId = null;
+        openNewPopup(callback);
+      }
+    });
+  } else {
+    openNewPopup(callback);
+  }
+}
+
+function openNewPopup(callback: (windowId: number) => void) {
   chrome.windows.create({
     url: chrome.runtime.getURL(new URL("popup.html", import.meta.url).pathname),
     type: "normal",
-    width: 600,
-    height: 500,
+    width: 900,
+    height: 1200,
   }, (newWindow) => {
     if (newWindow && newWindow.id !== undefined) {
       popupWindowId = newWindow.id;
