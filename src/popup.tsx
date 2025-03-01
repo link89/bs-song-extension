@@ -101,23 +101,16 @@ const Popup: React.FC = () => {
   const [newPlaylistCreator, setNewPlaylistCreator] = useState("");
   const [newPlaylistCover, setNewPlaylistCover] = useState("");
 
-  const onDeviceListChange = (devices: any[]) => {
-    if (devices.length > 0) {
-      setDeviceStatus(`Connected: ${devices.map(d => d.productName).join(", ")}`);
-      setIsConnected(true);
-      addLog(`Device connected: ${devices.map(d => d.productName).join(", ")}`);
-    } else {
-      setDeviceStatus("No Device");
-      setIsConnected(false);
-      addLog("No device connected.");
-    }
-  }
 
   // Effect: Subscribe to device list change
   useEffect(() => {
-    adbService.observer.onDeviceAdd(onDeviceListChange);
-    adbService.observer.onDeviceRemove(onDeviceListChange);
-    adbService.observer.onListChange(onDeviceListChange);
+    adbService.onDisconnect(() => {
+      setIsConnected(false);
+      setDeviceStatus("No Device");
+      setPlaylists([]);
+      setSongs([]);
+      setLogs((prev) => [...prev, "Device disconnected."]);
+    });
   }, []);
 
 
@@ -147,9 +140,9 @@ const Popup: React.FC = () => {
   // Device connect button handler
   const handleConnect = async () => {
     try {
-      const adb = await adbService.connect();
-      console.log(adb);
-      
+      await adbService.connect();
+      setIsConnected(true);
+      setDeviceStatus(`Connected: ${adbService.device?.name}`);
       fetchPlaylists();
     } catch (err) {
       addLog(`Error connecting to device: ${err.message}`);

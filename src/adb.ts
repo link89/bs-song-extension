@@ -1,4 +1,4 @@
-import { AdbDaemonWebUsbDeviceManager, AdbDaemonWebUsbDeviceObserver } from "@yume-chan/adb-daemon-webusb";
+import { AdbDaemonWebUsbDeviceManager, AdbDaemonWebUsbDeviceObserver, AdbDaemonWebUsbDevice } from "@yume-chan/adb-daemon-webusb";
 import { Adb, AdbDaemonTransport } from "@yume-chan/adb";
 import AdbWebCredentialStore from "@yume-chan/adb-credential-web";
 
@@ -9,6 +9,8 @@ export class AdbService {
   public observer: AdbDaemonWebUsbDeviceObserver;
   private credentialStore: AdbWebCredentialStore;
   private adb?: Adb;
+  public device?: AdbDaemonWebUsbDevice;
+  private disconnectListeners: (() => void)[] = [];
   
   constructor() {
     this.manager = AdbDaemonWebUsbDeviceManager.BROWSER!;
@@ -24,22 +26,30 @@ export class AdbService {
       console.log("Device list changed", devices);
     });
   }
-  
+
+  public onDisconnect(callback: () => void) {
+    this.disconnectListeners.push(callback);
+  }
+
   public async connect(): Promise<Adb> {
     if (this.adb) return this.adb;
-    const device = await this.manager.requestDevice();
-    if (device) {
-      const connection = await device.connect();
-      console.log("Device connected", device);
+    this.device = await this.manager.requestDevice();
+    if (this.device) {
+      const connection = await this.device.connect();
+      console.log("Device connected", this.device);
       const transport = await AdbDaemonTransport.authenticate({
-        serial: device.serial,
+        serial: this.device.serial,
         connection,
         credentialStore: this.credentialStore,
       })
+      console.log("Authenticated", transport);
       transport.disconnected.then(() => {
-        console.log("Device disconnected", device);
+        console.log("Device disconnected", this.device);
         this.adb = undefined;
+        this.device = undefined;
+        this.disconnectListeners.forEach((cb) => cb());
       });
+
       this.adb = new Adb(transport);
       // test connection
       const ret = await this.adb.subprocess.spawnAndWait("echo connected");
@@ -48,12 +58,10 @@ export class AdbService {
     throw new Error("No device found");
   }
 
-
   
   public async pushUrl(url: string, deviceFilePath: string): Promise<string> {
     const adb = await this.connect();
     const sync = await adb.sync();
-
     const res = await fetch(url);
     // get download url from the response
     if (deviceFilePath.endsWith("/")) {
