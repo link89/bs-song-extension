@@ -32,6 +32,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import { AdbService } from "./adb";
 
@@ -87,6 +88,12 @@ const Popup: React.FC = () => {
   const [customPlaylistsPath, setCustomPlaylistsPath] = useState("/sdcard/ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists");
   const [editingSongPath, setEditingSongPath] = useState(false);
   const [editingPlaylistPath, setEditingPlaylistPath] = useState(false);
+
+  // New settings modal state and temporary settings
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [tempDefaultPlaylist, setTempDefaultPlaylist] = useState(defaultPlaylist);
+  const [tempCustomSongPath, setTempCustomSongPath] = useState(customSongPath);
+  const [tempCustomPlaylistsPath, setTempCustomPlaylistsPath] = useState(customPlaylistsPath);
 
   // Create Playlist Dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -239,11 +246,36 @@ const Popup: React.FC = () => {
     };
   }, [songSaveMenuAnchor]);
 
+  // Settings modal handlers
+  const openSettingsModal = () => {
+    setTempDefaultPlaylist(defaultPlaylist);
+    setTempCustomSongPath(customSongPath);
+    setTempCustomPlaylistsPath(customPlaylistsPath);
+    setIsSettingsModalOpen(true);
+  };
+
+  const handleSettingsSave = () => {
+    setDefaultPlaylist(tempDefaultPlaylist);
+    setCustomSongPath(tempCustomSongPath);
+    setCustomPlaylistsPath(tempCustomPlaylistsPath);
+    setIsSettingsModalOpen(false);
+    addLog("Settings saved.");
+  };
+
+  const handleSettingsCancel = () => {
+    setIsSettingsModalOpen(false);
+  };
+
   return (
     <Container maxWidth="lg" style={{ marginTop: 20 }}>
-      <Typography variant="h4" gutterBottom>
-        <span className="section-title">Beat Saber Song Manager</span>
-      </Typography>
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+        <Typography variant="h4" gutterBottom>
+          <span className="section-title">Beat Saber Song Manager</span>
+        </Typography>
+        <IconButton onClick={openSettingsModal}>
+          <SettingsIcon />
+        </IconButton>
+      </Box>
 
       {/* Device Section */}
       <Paper elevation={3} style={{ padding: 16, marginBottom: 16 }}>
@@ -429,128 +461,6 @@ const Popup: React.FC = () => {
         </Accordion>
       </Box>
 
-      {/* Settings Section */}
-      <Box mt={3}>
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>
-              <span className="section-title">Settings</span>
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Grid container spacing={2}>
-              <Grid container item xs={12} alignItems="center">
-                <Grid item xs={4}>
-                  <Typography variant="body1">Default Playlist</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <FormControl fullWidth size="small" variant="outlined">
-                    <Select
-                      value={defaultPlaylist}
-                      onChange={(e) => setDefaultPlaylist(e.target.value)}
-                    >
-                      {playlists.map(pl => (
-                        <MenuItem key={pl.id} value={pl.id}>{pl.name}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-              <Grid container item xs={12} alignItems="center">
-                <Grid item xs={4}>
-                  <Typography variant="body1">Custom Song Path</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  {editingSongPath ? (
-                    <TextField
-                      fullWidth
-                      size="small"
-                      variant="outlined"
-                      value={customSongPath}
-                      onChange={(e) => setCustomSongPath(e.target.value)}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton onClick={() => setEditingSongPath(false)}>
-                              <CheckIcon />
-                            </IconButton>
-                            <IconButton onClick={() => setEditingSongPath(false)}>
-                              <CloseIcon />
-                            </IconButton>
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  ) : (
-                    <TextField
-                      fullWidth
-                      size="small"
-                      variant="outlined"
-                      value={customSongPath}
-                      InputProps={{
-                        readOnly: true,
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton onClick={() => setEditingSongPath(true)}>
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}
-                </Grid>
-              </Grid>
-              <Grid container item xs={12} alignItems="center">
-                <Grid item xs={4}>
-                  <Typography variant="body1">Custom Playlists Path</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  {editingPlaylistPath ? (
-                    <TextField
-                      fullWidth
-                      size="small"
-                      variant="outlined"
-                      value={customPlaylistsPath}
-                      onChange={(e) => setCustomPlaylistsPath(e.target.value)}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton onClick={() => setEditingPlaylistPath(false)}>
-                              <CheckIcon />
-                            </IconButton>
-                            <IconButton onClick={() => setEditingPlaylistPath(false)}>
-                              <CloseIcon />
-                            </IconButton>
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  ) : (
-                    <TextField
-                      fullWidth
-                      size="small"
-                      variant="outlined"
-                      value={customPlaylistsPath}
-                      InputProps={{
-                        readOnly: true,
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton onClick={() => setEditingPlaylistPath(true)}>
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}
-                </Grid>
-              </Grid>
-            </Grid>
-          </AccordionDetails>
-        </Accordion>
-      </Box>
-
       {/* Create Playlist Dialog */}
       <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)}>
         <DialogTitle>Create New Playlist</DialogTitle>
@@ -580,6 +490,54 @@ const Popup: React.FC = () => {
         <DialogActions>
           <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
           <Button onClick={handleCreatePlaylist} variant="contained">Create</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Settings Modal */}
+      <Dialog open={isSettingsModalOpen} onClose={handleSettingsCancel}>
+        <DialogTitle>Settings</DialogTitle>
+        <DialogContent>
+          <Box mt={1}>
+            <FormControl fullWidth size="small" variant="outlined" margin="dense">
+              <InputLabel id="default-playlist-label">Default Playlist</InputLabel>
+              <Select
+                labelId="default-playlist-label"
+                value={tempDefaultPlaylist}
+                label="Default Playlist"
+                onChange={(e) => setTempDefaultPlaylist(e.target.value as string)}
+              >
+                {playlists.map(pl => (
+                  <MenuItem key={pl.id} value={pl.id}>{pl.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          <Box mt={2}>
+            <TextField
+              fullWidth
+              size="small"
+              variant="outlined"
+              label="Custom Song Path"
+              value={tempCustomSongPath}
+              onChange={(e) => setTempCustomSongPath(e.target.value)}
+              margin="dense"
+            />
+          </Box>
+          <Box mt={2}>
+            <TextField
+              fullWidth
+              size="small"
+              variant="outlined"
+              label="Custom Playlists Path"
+              value={tempCustomPlaylistsPath}
+              onChange={(e) => setTempCustomPlaylistsPath(e.target.value)}
+              margin="dense"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSettingsCancel}>Cancel</Button>
+          <Button onClick={handleSettingsSave} variant="contained">Save</Button>
         </DialogActions>
       </Dialog>
     </Container>
