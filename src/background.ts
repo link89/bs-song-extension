@@ -25,6 +25,13 @@ function createPopupWindow(callback: (windowId: number) => void) {
   });
 }
 
+// Add listener for the extension button click
+chrome.action.onClicked.addListener(() => {
+	createPopupWindow((windowId) => {
+		// Optionally, perform any action after popup creation.
+	});
+});
+
 // Listen for messages from content scripts
 // Only forward event if the popup window is not open yet.
 // Otherwise, send the message will be sent from page to the popup directly.
