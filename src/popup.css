@@ -81,3 +81,9 @@ body {
   height: 350px;
   overflow: hidden;
 }
+
+/* Unified styling for section titles */
+.section-title {
+  color: gray;
+  text-shadow: 1px 1px 2px #888;
+}

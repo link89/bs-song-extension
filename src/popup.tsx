@@ -242,7 +242,7 @@ const Popup: React.FC = () => {
   return (
     <Container maxWidth="lg" style={{ marginTop: 20 }}>
       <Typography variant="h4" gutterBottom>
-        Beat Saber Song Manager
+        <span className="section-title">Beat Saber Song Manager</span>
       </Typography>
 
       {/* Device Section */}
@@ -267,7 +267,7 @@ const Popup: React.FC = () => {
         <Grid item xs={6}>
           <Paper elevation={3} style={{ padding: 16 }}>
             <Typography gutterBottom>
-              Playlists
+              <span className="section-title">Playlists</span>
             </Typography>
             <Box mb={1} display="flex" alignItems="center">
               <TextField
@@ -322,7 +322,7 @@ const Popup: React.FC = () => {
         <Grid item xs={6}>
           <Paper elevation={3} style={{ padding: 16 }}>
             <Typography gutterBottom>
-              Songs
+              <span className="section-title">Songs</span>
             </Typography>
             <Box mb={1} display="flex" alignItems="center">
               <TextField
@@ -413,7 +413,9 @@ const Popup: React.FC = () => {
       <Box mt={3}>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Log</Typography>
+            <Typography>
+              <span className="section-title">Log</span>
+            </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Box style={{ maxHeight: 150, overflowY: "auto" }}>
@@ -431,7 +433,9 @@ const Popup: React.FC = () => {
       <Box mt={3}>
         <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Settings</Typography>
+            <Typography>
+              <span className="section-title">Settings</span>
+            </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Grid container spacing={2}>
