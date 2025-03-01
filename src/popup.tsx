@@ -101,20 +101,25 @@ const Popup: React.FC = () => {
   const [newPlaylistCreator, setNewPlaylistCreator] = useState("");
   const [newPlaylistCover, setNewPlaylistCover] = useState("");
 
+  const onDeviceListChange = (devices: any[]) => {
+    if (devices.length > 0) {
+      setDeviceStatus(`Connected: ${devices.map(d => d.productName).join(", ")}`);
+      setIsConnected(true);
+      addLog(`Device connected: ${devices.map(d => d.productName).join(", ")}`);
+    } else {
+      setDeviceStatus("No Device");
+      setIsConnected(false);
+      addLog("No device connected.");
+    }
+  }
+
   // Effect: Subscribe to device list change
   useEffect(() => {
-    adbService.observer.onListChange((devices: any[]) => {
-      if (devices.length > 0) {
-        setDeviceStatus(`Connected: ${devices.map(d => d.productName).join(", ")}`);
-        setIsConnected(true);
-        addLog(`Device connected: ${devices.map(d => d.productName).join(", ")}`);
-      } else {
-        setDeviceStatus("No Device");
-        setIsConnected(false);
-        addLog("No device connected.");
-      }
-    });
+    adbService.observer.onDeviceAdd(onDeviceListChange);
+    adbService.observer.onDeviceRemove(onDeviceListChange);
+    adbService.observer.onListChange(onDeviceListChange);
   }, []);
+
 
   const addLog = (msg: string) => {
     setLogs((prev) => [...prev, msg]);
