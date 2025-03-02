@@ -30,6 +30,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
+import MoreVertIcon from '@mui/icons-material/MoreVert';  // Added import for 3 dots icon
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import untar from "js-untar";
 
@@ -358,13 +359,24 @@ const Popup: React.FC = () => {
                   {playlist.title}
                 </Typography>
               </Box>
-              <IconButton onClick={(e) => { e.stopPropagation(); openPlaylistMenu(e, playlist.id || playlist.title); }}>
-                <EditIcon fontSize="small" />
+              <IconButton 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  openPlaylistMenu(e, playlist.id || playlist.title); 
+                }}
+              >
+                <MoreVertIcon fontSize="small" /> {/* Replaced EditIcon with MoreVertIcon */}
               </IconButton>
             </Box>
           ))}
       </Box>
-      <Menu anchorEl={playlistMenuAnchor} open={Boolean(playlistMenuAnchor)} onClose={closePlaylistMenu}>
+      <Menu 
+        anchorEl={playlistMenuAnchor} 
+        open={Boolean(playlistMenuAnchor)} 
+        onClose={closePlaylistMenu}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}   // Adjusted position
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}      // Adjusted position
+      >
         <MenuItem onClick={handleDeletePlaylist}>Delete</MenuItem>
       </Menu>
     </Paper>
@@ -430,8 +442,13 @@ const Popup: React.FC = () => {
                                 {song.subTitle}
                               </Typography>
                             </Box>
-                            <IconButton onClick={(e) => { e.stopPropagation(); openSongMenu(e, song.id); }}>
-                              <EditIcon fontSize="small" />
+                            <IconButton 
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                openSongMenu(e, song.id); 
+                              }}
+                            >
+                              <MoreVertIcon fontSize="small" /> {/* Replaced EditIcon with MoreVertIcon */}
                             </IconButton>
                           </Box>
                         )}
@@ -446,7 +463,13 @@ const Popup: React.FC = () => {
           <Typography variant="body2">No playlist selected</Typography>
         )}
       </Box>
-      <Menu anchorEl={songMenuAnchor} open={Boolean(songMenuAnchor)} onClose={closeSongMenu}>
+      <Menu 
+        anchorEl={songMenuAnchor} 
+        open={Boolean(songMenuAnchor)} 
+        onClose={closeSongMenu}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}    // Adjusted position
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}       // Adjusted position
+      >
         <MenuItem onClick={handleRemoveSong}>Remove</MenuItem>
         <MenuItem onMouseEnter={openSongSaveSubMenu}>Save to Playlist</MenuItem>
       </Menu>
