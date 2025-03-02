@@ -42,11 +42,6 @@ import { Playlist } from "./type";
 const adbService = new AdbService();
 
 // Fake data for demonstration
-const fakePlaylists = [
-  { id: "1", name: "Chill Vibes", creator: "Alice", coverUrl: "" },
-  { id: "2", name: "Workout Mix", creator: "Bob", coverUrl: "" },
-  { id: "3", name: "Top Hits", creator: "Charlie", coverUrl: "" },
-];
 const fakeSongs = {
   "1": [
     { id: "s1", name: "Song A", artist: "Artist A", coverUrl: "" },
@@ -134,7 +129,7 @@ const Popup: React.FC = () => {
           const raw = JSON.parse(jsonStr);
           return {
             title: raw.playlistTitle,
-            img: raw.imageString,
+            img: 'data:image/png;base64,' + raw.imageString,
             songs: raw.songs.map((s: any) => ({
               title: s.songName,
               hash: s.hash,
@@ -341,27 +336,26 @@ const Popup: React.FC = () => {
               </Box>
               <Box style={{ minHeight: 300, overflowY: "auto" }}>
                 {playlists
-                  .filter(p => p.name.toLowerCase().includes(playlistFilter.toLowerCase()))
+                  .filter(p => p.title.toLowerCase().includes(playlistFilter.toLowerCase()))
                   .map(playlist => (
                     <Box
-                      key={playlist.id}
+                      key={playlist.id || playlist.title}
                       p={1}
                       mb={1}
                       onClick={() => handleSelectPlaylist(playlist)}
                       sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
                     >
                       <Box mr={2}>
-                        {playlist.coverUrl ? (
-                          <img src={playlist.coverUrl} alt="cover" width={40} height={40} />
+                        {playlist.img ? (
+                          <img src={playlist.img} alt="cover" width={40} height={40} />
                         ) : (
                           <Box width={40} height={40} bgcolor="grey.300" />
                         )}
                       </Box>
                       <Box flexGrow={1}>
-                        <Typography variant="subtitle1">{playlist.name}</Typography>
-                        <Typography variant="caption">{playlist.creator}</Typography>
+                        <Typography variant="subtitle1">{playlist.title}</Typography>
                       </Box>
-                      <IconButton onClick={(e) => { e.stopPropagation(); openPlaylistMenu(e, playlist.id); }}>
+                      <IconButton onClick={(e) => { e.stopPropagation(); openPlaylistMenu(e, playlist.id || playlist.title); }}>
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Box>
@@ -458,7 +452,7 @@ const Popup: React.FC = () => {
               >
                 {playlists.map(pl => (
                   <MenuItem key={pl.id} onClick={() => handleSaveSongToPlaylist(pl.id)}>
-                    {pl.name}
+                    {pl.title}
                   </MenuItem>
                 ))}
               </Menu>
@@ -533,7 +527,9 @@ const Popup: React.FC = () => {
                 onChange={(e) => setTempDefaultPlaylist(e.target.value as string)}
               >
                 {playlists.map(pl => (
-                  <MenuItem key={pl.id} value={pl.id}>{pl.name}</MenuItem>
+                  <MenuItem key={pl.id || pl.title} value={pl.id || pl.title}>
+                    {pl.title}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
