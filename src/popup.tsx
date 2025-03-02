@@ -31,6 +31,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MoreVertIcon from '@mui/icons-material/MoreVert';  // Added import for 3 dots icon
+import MusicNoteIcon from '@mui/icons-material/MusicNote'; // <-- new import added
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import untar from "js-untar";
 
@@ -177,9 +178,7 @@ const SongsSection: React.FC<SongsSectionProps> = ({
         onChange={(e) => setSongsFilter(e.target.value)}
         style={{ flexGrow: 1, marginRight: 8 }}
       />
-      <IconButton onClick={() => { if(selectedPlaylist) fetchSongs(selectedPlaylist); }}>
-        <RefreshIcon />
-      </IconButton>
+      { /* Removed the refresh song list button */ }
     </Box>
     <Box style={{ height: "300px", overflowY: "auto" }}>
       {selectedPlaylist ? (
@@ -210,7 +209,8 @@ const SongsSection: React.FC<SongsSectionProps> = ({
                           }}
                         >
                           <Box mr={2}>
-                            <Box width={40} height={40} bgcolor="grey.300" />
+                            { /* Changed: default cover to music icon */ }
+                            <MusicNoteIcon style={{ width: 40, height: 40 }} />
                           </Box>
                           <Box flexGrow={1}>
                             <Typography variant="subtitle1" sx={{
