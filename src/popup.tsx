@@ -128,7 +128,7 @@ const Popup: React.FC = () => {
           return {
             title: raw.playlistTitle,
             path: `${customPlaylistsPath}/${file.name}`,
-            img: 'data:image/png;base64,' + raw.imageString,
+            img: raw.imageString ? 'data:image/png;base64,' + raw.imageString : undefined,
             songs: raw.songs.map((s: any) => ({
               title: s.songName,
               hash: s.hash,
@@ -333,7 +333,7 @@ const Popup: React.FC = () => {
                   <RefreshIcon />
                 </IconButton>
               </Box>
-              <Box style={{ minHeight: 300, overflowY: "auto" }}>
+              <Box style={{ height: "300px", overflowY: "auto" }}>
                 {playlists
                   .filter(p => p.title.toLowerCase().includes(playlistFilter.toLowerCase()))
                   .map(playlist => (
@@ -386,7 +386,7 @@ const Popup: React.FC = () => {
                   <RefreshIcon />
                 </IconButton>
               </Box>
-              <Box style={{ minHeight: 300, overflowY: "auto" }}>
+              <Box style={{ height: "300px", overflowY: "auto" }}>
                 {selectedPlaylist ? (
                   <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable droppableId="songs">
