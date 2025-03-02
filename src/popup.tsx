@@ -110,7 +110,7 @@ const Popup: React.FC = () => {
         }
       }
       setSongsMap(songsMap);
-      addLog("All songs loaded.");
+      addLog("All songs are loaded.");
     } catch (err) {
       addLog(`Error fetching all songs: ${err.message}`);
     }
@@ -147,7 +147,7 @@ const Popup: React.FC = () => {
       }).filter(Boolean);
       const sorted = extractedPlaylists.sort((a, b) => a.title.localeCompare(b.title));
       setPlaylists(sorted);
-      addLog("Playlists loaded.");
+      addLog("Playlists are loaded.");
     } catch (err) {
       addLog(`Error fetching playlists: ${err.message}`);
     }
@@ -329,10 +329,18 @@ const Popup: React.FC = () => {
           .map(playlist => (
             <Box
               key={playlist.id || playlist.title}
-              p={1}
-              mb={1}
               onClick={() => { setSelectedPlaylist(playlist); fetchSongs(playlist); }}
-              sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+              sx={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                height: "60px",
+                p: 1,
+                mb: 1,
+                boxShadow: 1,
+                borderRadius: "4px",
+                overflow: "hidden"
+              }}
             >
               <Box mr={2}>
                 {playlist.img ? (
@@ -342,7 +350,13 @@ const Popup: React.FC = () => {
                 )}
               </Box>
               <Box flexGrow={1}>
-                <Typography variant="subtitle1">{playlist.title}</Typography>
+                <Typography variant="subtitle1" sx={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis"
+                }}>
+                  {playlist.title}
+                </Typography>
               </Box>
               <IconButton onClick={(e) => { e.stopPropagation(); openPlaylistMenu(e, playlist.id || playlist.title); }}>
                 <EditIcon fontSize="small" />
@@ -388,17 +402,37 @@ const Popup: React.FC = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            p={1}
-                            mb={1}
-                            display="flex"
-                            flexDirection="column"
-                            border="1px solid #ccc"
-                            borderRadius="4px"
+                            onClick={() => {}}
+                            sx={{
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              height: "60px",
+                              p: 1,
+                              mb: 1,
+                              boxShadow: 1,
+                              borderRadius: "4px",
+                              overflow: "hidden"
+                            }}
                           >
-                            <Typography variant="subtitle1">{song.title}</Typography>
-                            <Typography variant="body2">{song.subTitle}</Typography>
-                            <Typography variant="caption">Author: {song.author}</Typography>
-                            <Typography variant="caption">Mapper: {song.mapper}</Typography>
+                            <Box mr={2}>
+                              <Box width={40} height={40} bgcolor="grey.300" />
+                            </Box>
+                            <Box flexGrow={1}>
+                              <Typography variant="subtitle1" sx={{
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis"
+                              }}>
+                                {song.title}
+                              </Typography>
+                              <Typography variant="body2">
+                                {song.subTitle}
+                              </Typography>
+                            </Box>
+                            <IconButton onClick={(e) => { e.stopPropagation(); openSongMenu(e, song.id); }}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
                           </Box>
                         )}
                       </Draggable>
