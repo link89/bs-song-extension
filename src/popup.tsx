@@ -39,49 +39,34 @@ import { Playlist, SongDetail } from "./type";
 const adbService = new AdbService();
 
 const Popup: React.FC = () => {
-  // Device Section state
+  // Device Section state, Playlists state, Songs state, etc.
   const [deviceStatus, setDeviceStatus] = useState("No Device");
   const [isConnected, setIsConnected] = useState(false);
-
-  // Playlists state
   const [playlists, setPlaylists] = useState<Array<Playlist>>([]);
   const [playlistFilter, setPlaylistFilter] = useState("");
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [playlistMenuAnchor, setPlaylistMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuPlaylistId, setMenuPlaylistId] = useState<string>("");
-
-  // All custom songs state
   const [songsMap, setSongsMap] = useState<{ [id: string]: SongDetail }>({});
-
-  // Songs list state
   const [songs, setSongs] = useState<Array<SongDetail>>([]);
   const [songsFilter, setSongsFilter] = useState("");
   const [songMenuAnchor, setSongMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuSongId, setMenuSongId] = useState<string>("");
   const [songSaveMenuAnchor, setSongSaveMenuAnchor] = useState<null | HTMLElement>(null);
   const songSaveMenuRef = useRef<HTMLDivElement>(null);
-
-  // Log state
   const [logs, setLogs] = useState<string[]>([]);
-
-  // Settings state
   const [defaultPlaylist, setDefaultPlaylist] = useState("");
   const [customSongPath, setCustomSongPath] = useState("/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels");
   const [customPlaylistsPath, setCustomPlaylistsPath] = useState("/sdcard/ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists");
-
-  // New settings modal state and temporary settings
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [tempDefaultPlaylist, setTempDefaultPlaylist] = useState(defaultPlaylist);
   const [tempCustomSongPath, setTempCustomSongPath] = useState(customSongPath);
   const [tempCustomPlaylistsPath, setTempCustomPlaylistsPath] = useState(customPlaylistsPath);
-
-  // Create Playlist Dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [newPlaylistCreator, setNewPlaylistCreator] = useState("");
   const [newPlaylistCover, setNewPlaylistCover] = useState("");
 
-  // Effect: Subscribe to device list change
   useEffect(() => {
     adbService.onDisconnect(() => {
       setIsConnected(false);
@@ -91,7 +76,6 @@ const Popup: React.FC = () => {
       setLogs((prev) => [...prev, "Device disconnected."]);
     });
   }, []);
-
 
   const addLog = (msg: string) => {
     setLogs((prev) => [...prev, msg]);
@@ -306,6 +290,250 @@ const Popup: React.FC = () => {
     setIsSettingsModalOpen(false);
   };
 
+  const DeviceSection = () => (
+    <Paper elevation={3} style={{ padding: 16, marginBottom: 16 }}>
+      <Grid container>
+        <Grid item xs={6}>
+          <Typography variant="subtitle1">{deviceStatus}</Typography>
+        </Grid>
+        <Grid item xs={6} style={{ textAlign: "right" }}>
+          <Button variant="contained" onClick={handleConnect}>Connect Device</Button>
+        </Grid>
+      </Grid>
+    </Paper>
+  );
+
+  const PlaylistsSection = () => (
+    <Paper elevation={3} style={{ padding: 16 }}>
+      <Typography gutterBottom>
+        <span className="section-title">Playlists</span>
+      </Typography>
+      <Box mb={1} display="flex" alignItems="center">
+        <TextField
+          label="Filter Playlists"
+          size="small"
+          value={playlistFilter}
+          onChange={(e) => setPlaylistFilter(e.target.value)}
+          style={{ flexGrow: 1, marginRight: 8 }}
+        />
+        <IconButton onClick={() => setCreateDialogOpen(true)}>
+          <AddIcon />
+        </IconButton>
+        <IconButton onClick={fetchPlaylists}>
+          <RefreshIcon />
+        </IconButton>
+      </Box>
+      <Box style={{ height: "300px", overflowY: "auto" }}>
+        {playlists
+          .filter(p => p.title.toLowerCase().includes(playlistFilter.toLowerCase()))
+          .map(playlist => (
+            <Box
+              key={playlist.id || playlist.title}
+              p={1}
+              mb={1}
+              onClick={() => { setSelectedPlaylist(playlist); fetchSongs(playlist); }}
+              sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+            >
+              <Box mr={2}>
+                {playlist.img ? (
+                  <img src={playlist.img} alt="cover" width={40} height={40} />
+                ) : (
+                  <Box width={40} height={40} bgcolor="grey.300" />
+                )}
+              </Box>
+              <Box flexGrow={1}>
+                <Typography variant="subtitle1">{playlist.title}</Typography>
+              </Box>
+              <IconButton onClick={(e) => { e.stopPropagation(); openPlaylistMenu(e, playlist.id || playlist.title); }}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          ))}
+      </Box>
+      <Menu anchorEl={playlistMenuAnchor} open={Boolean(playlistMenuAnchor)} onClose={closePlaylistMenu}>
+        <MenuItem onClick={handleDeletePlaylist}>Delete</MenuItem>
+      </Menu>
+    </Paper>
+  );
+
+  const SongsSection = () => (
+    <Paper elevation={3} style={{ padding: 16 }}>
+      <Typography gutterBottom>
+        <span className="section-title">Songs</span>
+      </Typography>
+      <Box mb={1} display="flex" alignItems="center">
+        <TextField
+          label="Filter Songs"
+          size="small"
+          value={songsFilter}
+          onChange={(e) => setSongsFilter(e.target.value)}
+          style={{ flexGrow: 1, marginRight: 8 }}
+        />
+        <IconButton onClick={() => { if(selectedPlaylist) fetchSongs(selectedPlaylist); }}>
+          <RefreshIcon />
+        </IconButton>
+      </Box>
+      <Box style={{ height: "300px", overflowY: "auto" }}>
+        {selectedPlaylist ? (
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="songs">
+              {(provided) => (
+                <div ref={provided.innerRef} {...provided.droppableProps}>
+                  {songs
+                    .filter(s => s.title.toLowerCase().includes(songsFilter.toLowerCase()))
+                    .map((song, index) => (
+                      <Draggable key={song.id} draggableId={song.id} index={index}>
+                        {(provided) => (
+                          <Box
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            p={1}
+                            mb={1}
+                            display="flex"
+                            flexDirection="column"
+                            border="1px solid #ccc"
+                            borderRadius="4px"
+                          >
+                            <Typography variant="subtitle1">{song.title}</Typography>
+                            <Typography variant="body2">{song.subTitle}</Typography>
+                            <Typography variant="caption">Author: {song.author}</Typography>
+                            <Typography variant="caption">Mapper: {song.mapper}</Typography>
+                          </Box>
+                        )}
+                      </Draggable>
+                    ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        ) : (
+          <Typography variant="body2">No playlist selected</Typography>
+        )}
+      </Box>
+      <Menu anchorEl={songMenuAnchor} open={Boolean(songMenuAnchor)} onClose={closeSongMenu}>
+        <MenuItem onClick={handleRemoveSong}>Remove</MenuItem>
+        <MenuItem onMouseEnter={openSongSaveSubMenu}>Save to Playlist</MenuItem>
+      </Menu>
+      <Menu
+        anchorEl={songSaveMenuAnchor}
+        open={Boolean(songSaveMenuAnchor)}
+        onClose={closeSongSaveMenu}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        PaperProps={{ ref: songSaveMenuRef }}
+      >
+        {playlists.map(pl => (
+          <MenuItem key={pl.id} onClick={() => handleSaveSongToPlaylist(pl.id)}>
+            {pl.title}
+          </MenuItem>
+        ))}
+      </Menu>
+    </Paper>
+  );
+
+  const LogSection = () => (
+    <Box mt={3}>
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography><span className="section-title">Log</span></Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box style={{ maxHeight: 150, overflowY: "auto" }}>
+            {logs.map((log, idx) => (
+              <Typography variant="caption" key={idx} display="block">{log}</Typography>
+            ))}
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+    </Box>
+  );
+
+  const CreatePlaylistDialog = () => (
+    <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)}>
+      <DialogTitle>Create New Playlist</DialogTitle>
+      <DialogContent>
+        <TextField
+          label="Playlist Name"
+          fullWidth
+          margin="dense"
+          value={newPlaylistName}
+          onChange={(e) => setNewPlaylistName(e.target.value)}
+        />
+        <TextField
+          label="Creator"
+          fullWidth
+          margin="dense"
+          value={newPlaylistCreator}
+          onChange={(e) => setNewPlaylistCreator(e.target.value)}
+        />
+        <TextField
+          label="Cover URL (optional)"
+          fullWidth
+          margin="dense"
+          value={newPlaylistCover}
+          onChange={(e) => setNewPlaylistCover(e.target.value)}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+        <Button onClick={handleCreatePlaylist} variant="contained">Create</Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const SettingsDialog = () => (
+    <Dialog open={isSettingsModalOpen} onClose={handleSettingsCancel} fullWidth maxWidth="md">
+      <DialogTitle>Settings</DialogTitle>
+      <DialogContent>
+        <Box mt={1}>
+          <FormControl fullWidth size="small" variant="outlined" margin="dense">
+            <InputLabel id="default-playlist-label">Default Playlist</InputLabel>
+            <Select
+              labelId="default-playlist-label"
+              value={tempDefaultPlaylist}
+              label="Default Playlist"
+              onChange={(e) => setTempDefaultPlaylist(e.target.value as string)}
+            >
+              {playlists.map(pl => (
+                <MenuItem key={pl.id || pl.title} value={pl.id || pl.title}>
+                  {pl.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+        <Box mt={2}>
+          <TextField
+            fullWidth
+            size="small"
+            variant="outlined"
+            label="Custom Song Path"
+            value={tempCustomSongPath}
+            onChange={(e) => setTempCustomSongPath(e.target.value)}
+            margin="dense"
+          />
+        </Box>
+        <Box mt={2}>
+          <TextField
+            fullWidth
+            size="small"
+            variant="outlined"
+            label="Custom Playlists Path"
+            value={tempCustomPlaylistsPath}
+            onChange={(e) => setTempCustomPlaylistsPath(e.target.value)}
+            margin="dense"
+          />
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleSettingsCancel}>Cancel</Button>
+        <Button onClick={handleSettingsSave} variant="contained">Save</Button>
+      </DialogActions>
+    </Dialog>
+  );
+
   return (
     <Container maxWidth="lg" style={{ marginTop: 20 }}>
       <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -316,267 +544,22 @@ const Popup: React.FC = () => {
           <SettingsIcon />
         </IconButton>
       </Box>
-
-      {/* Device Section */}
-      <Paper elevation={3} style={{ padding: 16, marginBottom: 16 }}>
-        <Grid container>
-          <Grid item xs={6}>
-            <Typography variant="subtitle1">
-              {deviceStatus}
-            </Typography>
-          </Grid>
-          <Grid item xs={6} style={{ textAlign: "right" }}>
-            <Button variant="contained" onClick={handleConnect}>
-              Connect Device
-            </Button>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Songs and Playlists Section */}
+      <DeviceSection />
       <Grid container spacing={2}>
-        {/* Playlists List */}
         <Grid item xs={6}>
           <Box style={{ pointerEvents: isConnected ? "auto" : "none", opacity: isConnected ? 1 : 0.5 }}>
-            <Paper elevation={3} style={{ padding: 16 }}>
-              <Typography gutterBottom>
-                <span className="section-title">Playlists</span>
-              </Typography>
-              <Box mb={1} display="flex" alignItems="center">
-                <TextField
-                  label="Filter Playlists"
-                  size="small"
-                  value={playlistFilter}
-                  onChange={(e) => setPlaylistFilter(e.target.value)}
-                  style={{ flexGrow: 1, marginRight: 8 }}
-                />
-                <IconButton onClick={() => setCreateDialogOpen(true)}>
-                  <AddIcon />
-                </IconButton>
-                <IconButton onClick={fetchPlaylists}>
-                  <RefreshIcon />
-                </IconButton>
-              </Box>
-              <Box style={{ height: "300px", overflowY: "auto" }}>
-                {playlists
-                  .filter(p => p.title.toLowerCase().includes(playlistFilter.toLowerCase()))
-                  .map(playlist => (
-                    <Box
-                      key={playlist.id || playlist.title}
-                      p={1}
-                      mb={1}
-                      onClick={() => handleSelectPlaylist(playlist)}
-                      sx={{ cursor: "pointer", display: "flex", alignItems: "center" }}
-                    >
-                      <Box mr={2}>
-                        {playlist.img ? (
-                          <img src={playlist.img} alt="cover" width={40} height={40} />
-                        ) : (
-                          <Box width={40} height={40} bgcolor="grey.300" />
-                        )}
-                      </Box>
-                      <Box flexGrow={1}>
-                        <Typography variant="subtitle1">{playlist.title}</Typography>
-                      </Box>
-                      <IconButton onClick={(e) => { e.stopPropagation(); openPlaylistMenu(e, playlist.id || playlist.title); }}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  ))}
-              </Box>
-              <Menu anchorEl={playlistMenuAnchor} open={Boolean(playlistMenuAnchor)} onClose={closePlaylistMenu}>
-                <MenuItem onClick={handleDeletePlaylist}>Delete</MenuItem>
-              </Menu>
-            </Paper>
+            <PlaylistsSection />
           </Box>
         </Grid>
-
-        {/* Songs List */}
         <Grid item xs={6}>
           <Box style={{ pointerEvents: isConnected ? "auto" : "none", opacity: isConnected ? 1 : 0.5 }}>
-            <Paper elevation={3} style={{ padding: 16 }}>
-              <Typography gutterBottom>
-                <span className="section-title">Songs</span>
-              </Typography>
-              <Box mb={1} display="flex" alignItems="center">
-                <TextField
-                  label="Filter Songs"
-                  size="small"
-                  value={songsFilter}
-                  onChange={(e) => setSongsFilter(e.target.value)}
-                  style={{ flexGrow: 1, marginRight: 8 }}
-                />
-                <IconButton onClick={() => handleSelectPlaylist(selectedPlaylist!)}>
-                  <RefreshIcon />
-                </IconButton>
-              </Box>
-              <Box style={{ height: "300px", overflowY: "auto" }}>
-                {selectedPlaylist ? (
-                  <DragDropContext onDragEnd={onDragEnd}>
-                    <Droppable droppableId="songs">
-                      {(provided) => (
-                        <div ref={provided.innerRef} {...provided.droppableProps}>
-                          {songs
-                            .filter(s => s.title.toLowerCase().includes(songsFilter.toLowerCase()))
-                            .map((song, index) => (
-                              <Draggable key={song.id} draggableId={song.id} index={index}>
-                                {(provided) => (
-                                  <Box
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    p={1}
-                                    mb={1}
-                                    display="flex"
-                                    flexDirection="column"
-                                    border="1px solid #ccc"
-                                    borderRadius="4px"
-                                  >
-                                    <Typography variant="subtitle1">{song.title}</Typography>
-                                    <Typography variant="body2">{song.subTitle}</Typography>
-                                    <Typography variant="caption">Author: {song.author}</Typography>
-                                    <Typography variant="caption">Mapper: {song.mapper}</Typography>
-                                  </Box>
-                                )}
-                              </Draggable>
-                            ))}
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-                  </DragDropContext>
-                ) : (
-                  <Typography variant="body2">No playlist selected</Typography>
-                )}
-              </Box>
-              <Menu anchorEl={songMenuAnchor} open={Boolean(songMenuAnchor)} onClose={closeSongMenu}>
-                <MenuItem onClick={handleRemoveSong}>Remove</MenuItem>
-                <MenuItem 
-                  onMouseEnter={openSongSaveSubMenu} 
-                >
-                  Save to Playlist
-                </MenuItem>
-              </Menu>
-              <Menu
-                anchorEl={songSaveMenuAnchor}
-                open={Boolean(songSaveMenuAnchor)}
-                onClose={closeSongSaveMenu}
-                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                PaperProps={{ ref: songSaveMenuRef }}  // Added ref to capture clicks outside
-              >
-                {playlists.map(pl => (
-                  <MenuItem key={pl.id} onClick={() => handleSaveSongToPlaylist(pl.id)}>
-                    {pl.title}
-                  </MenuItem>
-                ))}
-              </Menu>
-            </Paper>
+            <SongsSection />
           </Box>
         </Grid>
       </Grid>
-
-      {/* Log Section */}
-      <Box mt={3}>
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>
-              <span className="section-title">Log</span>
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Box style={{ maxHeight: 150, overflowY: "auto" }}>
-              {logs.map((log, idx) => (
-                <Typography variant="caption" key={idx} display="block">
-                  {log}
-                </Typography>
-              ))}
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-      </Box>
-
-      {/* Create Playlist Dialog */}
-      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)}>
-        <DialogTitle>Create New Playlist</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Playlist Name"
-            fullWidth
-            margin="dense"
-            value={newPlaylistName}
-            onChange={(e) => setNewPlaylistName(e.target.value)}
-          />
-          <TextField
-            label="Creator"
-            fullWidth
-            margin="dense"
-            value={newPlaylistCreator}
-            onChange={(e) => setNewPlaylistCreator(e.target.value)}
-          />
-          <TextField
-            label="Cover URL (optional)"
-            fullWidth
-            margin="dense"
-            value={newPlaylistCover}
-            onChange={(e) => setNewPlaylistCover(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleCreatePlaylist} variant="contained">Create</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Settings Modal */}
-      <Dialog open={isSettingsModalOpen} onClose={handleSettingsCancel} fullWidth maxWidth="md">
-        <DialogTitle>Settings</DialogTitle>
-        <DialogContent>
-          <Box mt={1}>
-            <FormControl fullWidth size="small" variant="outlined" margin="dense">
-              <InputLabel id="default-playlist-label">Default Playlist</InputLabel>
-              <Select
-                labelId="default-playlist-label"
-                value={tempDefaultPlaylist}
-                label="Default Playlist"
-                onChange={(e) => setTempDefaultPlaylist(e.target.value as string)}
-              >
-                {playlists.map(pl => (
-                  <MenuItem key={pl.id || pl.title} value={pl.id || pl.title}>
-                    {pl.title}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-          <Box mt={2}>
-            <TextField
-              fullWidth
-              size="small"
-              variant="outlined"
-              label="Custom Song Path"
-              value={tempCustomSongPath}
-              onChange={(e) => setTempCustomSongPath(e.target.value)}
-              margin="dense"
-            />
-          </Box>
-          <Box mt={2}>
-            <TextField
-              fullWidth
-              size="small"
-              variant="outlined"
-              label="Custom Playlists Path"
-              value={tempCustomPlaylistsPath}
-              onChange={(e) => setTempCustomPlaylistsPath(e.target.value)}
-              margin="dense"
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleSettingsCancel}>Cancel</Button>
-          <Button onClick={handleSettingsSave} variant="contained">Save</Button>
-        </DialogActions>
-      </Dialog>
+      <LogSection />
+      <CreatePlaylistDialog />
+      <SettingsDialog />
     </Container>
   );
 };
