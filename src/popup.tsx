@@ -38,31 +38,15 @@ import { Playlist, SongDetail } from "./type";
 
 const adbService = new AdbService();
 
-// Fake data for demonstration
-const fakeSongs = {
-  "1": [
-    { id: "s1", name: "Song A", artist: "Artist A", coverUrl: "" },
-    { id: "s2", name: "Song B", artist: "Artist B", coverUrl: "" },
-  ],
-  "2": [
-    { id: "s3", name: "Song C", artist: "Artist C", coverUrl: "" },
-    { id: "s4", name: "Song D", artist: "Artist D", coverUrl: "" },
-  ],
-  "3": [
-    { id: "s5", name: "Song E", artist: "Artist E", coverUrl: "" },
-    { id: "s6", name: "Song F", artist: "Artist F", coverUrl: "" },
-  ]
-};
-
 const Popup: React.FC = () => {
   // Device Section state
   const [deviceStatus, setDeviceStatus] = useState("No Device");
   const [isConnected, setIsConnected] = useState(false);
 
   // Playlists state
-  const [playlists, setPlaylists] = useState<Array<any>>([]);
+  const [playlists, setPlaylists] = useState<Array<Playlist>>([]);
   const [playlistFilter, setPlaylistFilter] = useState("");
-  const [selectedPlaylist, setSelectedPlaylist] = useState<any>(null);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [playlistMenuAnchor, setPlaylistMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuPlaylistId, setMenuPlaylistId] = useState<string>("");
 
@@ -70,7 +54,7 @@ const Popup: React.FC = () => {
   const [songsMap, setSongsMap] = useState<{ [id: string]: SongDetail }>({});
 
   // Songs list state
-  const [songs, setSongs] = useState<Array<SongDetail[]>>([]);
+  const [songs, setSongs] = useState<Array<SongDetail>>([]);
   const [songsFilter, setSongsFilter] = useState("");
   const [songMenuAnchor, setSongMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuSongId, setMenuSongId] = useState<string>("");
@@ -78,7 +62,7 @@ const Popup: React.FC = () => {
   const songSaveMenuRef = useRef<HTMLDivElement>(null);
 
   // Log state
-  const [logs, setLogs] = useState<string[]>(["App started."]);
+  const [logs, setLogs] = useState<string[]>([]);
 
   // Settings state
   const [defaultPlaylist, setDefaultPlaylist] = useState("");
@@ -116,33 +100,33 @@ const Popup: React.FC = () => {
   const fetchSongsMap = async () => {
     addLog("Fetching all songs...");
     try {
-      addLog("Creating songs.tar...");
       await adbService.shell(`cd ${customSongPath} && tar -cf ../songs.tar */Info.dat`);
-      addLog("Pulling songs.tar...");
       const tgzBuffer = await adbService.pull(`${customSongPath}/../songs.tar`);
-      addLog("Extracting songs.tar...");
       const files = await untar(tgzBuffer);
       const songsMap = {};
       for (const file of files) {
-        console.log(`Extracting ${file.name}...`);
+        console.log(`Parsing ${file.name} ...`);
         try {
           const jsonStr = new TextDecoder().decode(file.buffer);
           const raw = JSON.parse(jsonStr);
           const dirname = file.name.split("/")[0];
           const id = `custom_level_${dirname}`;
+          console.log(`Parsed ${id} from ${file.name}`);
           songsMap[id] = {
-            title: raw._songName,
+            id: id,
+            title: raw._songName || '',
             subTitle: raw._songSubName,
             author: raw._songAuthorName,
             mapper: raw._levelAuthorName,
             bpm: raw._beatsPerMinute,
             path: `${customSongPath}/${file.name}`,
-            levelId: id,
           };
         } catch (err) {
           addLog(`Error parse ${file.name}: ${err.message}`);
         }
       }
+      setSongsMap(songsMap);
+      addLog("All songs loaded.");
     } catch (err) {
       addLog(`Error fetching all songs: ${err.message}`);
     }
@@ -160,20 +144,17 @@ const Popup: React.FC = () => {
         try {
           const jsonStr = new TextDecoder().decode(file.buffer);
           const raw = JSON.parse(jsonStr);
+          const path = `${customPlaylistsPath}/${file.name}`;
           return {
-            title: raw.playlistTitle,
-            path: `${customPlaylistsPath}/${file.name}`,
+            id: path, path: path, title: raw.playlistTitle,
             img: raw.imageString ? 'data:image/png;base64,' + raw.imageString : undefined,
             songs: raw.songs.map((s: any) => {
-              const song = songsMap[s.levelid];
-              if (!song) {
-                console.log(`Song ${s.levelid} not found in songs map.`);
-              }
+              const id: string = s.levelid;
               return {
                 title: s.songName,
-                levelId: s.levelid,
+                id,
               }
-            }),
+            }).filter(Boolean),
           } 
         } catch (err) {
           addLog(`Failed to parse ${file.name}: ${err.message}`);
@@ -188,15 +169,14 @@ const Popup: React.FC = () => {
     }
   };
 
-  // Simulate fetch songs for a playlist
-  const fetchSongs = async (playlistId: string) => {
-    addLog(`Fetching songs for playlist ${playlistId}...`);
-    const playlist = playlists.find(p => p.id === playlistId);
-    if (!playlist) {
-      addLog(`Playlist ${playlistId} not found.`);
-      return;
+  const fetchSongs = async (playlist: Playlist) => {
+    addLog(`Fetching songs for playlist ${playlist.id} ...`);
+    for (const song of playlist.songs) {
+      if (!songsMap[song.id]) {
+        addLog(`Song ${song.id} not found in all songs.`);
+      }
     }
-    const songs = playlist.songs.map(s => songsMap[s.levelId]);
+    const songs = playlist.songs.map(s => songsMap[s.id]).filter(Boolean);
     setSongs(songs);
   };
 
@@ -258,9 +238,10 @@ const Popup: React.FC = () => {
   };
 
   // Handle playlist selection from left list
-  const handleSelectPlaylist = (playlist: any) => {
+  const handleSelectPlaylist = (playlist: Playlist) => {
+    console.log("Selected playlist", playlist);
     setSelectedPlaylist(playlist);
-    fetchSongs(playlist.id);
+    fetchSongs(playlist);
   };
 
   // Handle drag & drop for songs reordering
@@ -281,7 +262,7 @@ const Popup: React.FC = () => {
       creator: newPlaylistCreator,
       coverUrl: newPlaylistCover,
     };
-    setPlaylists((prev) => [...prev, newPlaylist].sort((a, b) => a.name.localeCompare(b.name)));
+    // setPlaylists((prev) => [...prev, newPlaylist].sort((a, b) => a.title.localeCompare(b.title)));
     addLog(`Created new playlist: ${newPlaylistName}.`);
     setCreateDialogOpen(false);
     setNewPlaylistName("");
@@ -425,7 +406,7 @@ const Popup: React.FC = () => {
                   onChange={(e) => setSongsFilter(e.target.value)}
                   style={{ flexGrow: 1, marginRight: 8 }}
                 />
-                <IconButton onClick={() => selectedPlaylist && fetchSongs(selectedPlaylist.id)}>
+                <IconButton onClick={() => handleSelectPlaylist(selectedPlaylist!)}>
                   <RefreshIcon />
                 </IconButton>
               </Box>
@@ -436,7 +417,7 @@ const Popup: React.FC = () => {
                       {(provided) => (
                         <div ref={provided.innerRef} {...provided.droppableProps}>
                           {songs
-                            .filter(s => s.name.toLowerCase().includes(songsFilter.toLowerCase()))
+                            .filter(s => s.title.toLowerCase().includes(songsFilter.toLowerCase()))
                             .map((song, index) => (
                               <Draggable key={song.id} draggableId={song.id} index={index}>
                                 {(provided) => (
@@ -447,22 +428,14 @@ const Popup: React.FC = () => {
                                     p={1}
                                     mb={1}
                                     display="flex"
-                                    alignItems="center"
+                                    flexDirection="column"
+                                    border="1px solid #ccc"
+                                    borderRadius="4px"
                                   >
-                                    <Box mr={2}>
-                                      {song.coverUrl ? (
-                                        <img src={song.coverUrl} alt="cover" width={40} height={40} />
-                                      ) : (
-                                        <Box width={40} height={40} bgcolor="grey.300" />
-                                      )}
-                                    </Box>
-                                    <Box flexGrow={1}>
-                                      <Typography variant="subtitle1">{song.name}</Typography>
-                                      <Typography variant="caption">{song.artist}</Typography>
-                                    </Box>
-                                    <IconButton onClick={(e) => { e.stopPropagation(); openSongMenu(e, song.id); }}>
-                                      <EditIcon fontSize="small" />
-                                    </IconButton>
+                                    <Typography variant="subtitle1">{song.title}</Typography>
+                                    <Typography variant="body2">{song.subTitle}</Typography>
+                                    <Typography variant="caption">Author: {song.author}</Typography>
+                                    <Typography variant="caption">Mapper: {song.mapper}</Typography>
                                   </Box>
                                 )}
                               </Draggable>

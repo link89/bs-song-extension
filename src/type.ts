@@ -5,10 +5,11 @@ export interface DownloadEvent {
 
 export interface Song {
   title: string;
-  levelId: string;
+  id: string;
 }
 
 export interface Playlist {
+  id: string;
   title: string;
   songs: Song[];
   img?: string;  // base64
