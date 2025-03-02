@@ -166,7 +166,7 @@ const Popup: React.FC = () => {
             img: raw.imageString ? 'data:image/png;base64,' + raw.imageString : undefined,
             songs: raw.songs.map((s: any) => {
               const song = songsMap[s.levelid];
-              if (!!song) {
+              if (!song) {
                 console.log(`Song ${s.levelid} not found in songs map.`);
               }
               return {
