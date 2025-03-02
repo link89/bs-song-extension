@@ -457,9 +457,8 @@ const Popup: React.FC = () => {
               )}
             </Droppable>
           </DragDropContext>
-        ) : (
-          <Typography variant="body2">Select a playlist to view songs.</Typography>
-        )}
+        ) : (<></>)
+        }
       </Box>
       <Menu 
         anchorEl={songMenuAnchor} 
