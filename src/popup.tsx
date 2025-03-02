@@ -39,6 +39,232 @@ import { Playlist, SongDetail } from "./type";
 
 const adbService = new AdbService();
 
+interface PlaylistsSectionProps {
+  playlists: Array<Playlist>;
+  playlistFilter: string;
+  setPlaylistFilter: React.Dispatch<React.SetStateAction<string>>;
+  onOpenCreateDialog: () => void;
+  fetchPlaylists: () => void;
+  onSelectPlaylist: (playlist: Playlist) => void;
+  openPlaylistMenu: (e: React.MouseEvent<HTMLElement>, playlistId: string) => void;
+  playlistMenuAnchor: HTMLElement | null;
+  closePlaylistMenu: () => void;
+  handleDeletePlaylist: () => void;
+}
+
+const PlaylistsSection: React.FC<PlaylistsSectionProps> = ({
+  playlists,
+  playlistFilter,
+  setPlaylistFilter,
+  onOpenCreateDialog,
+  fetchPlaylists,
+  onSelectPlaylist,
+  openPlaylistMenu,
+  playlistMenuAnchor,
+  closePlaylistMenu,
+  handleDeletePlaylist,
+}) => (
+  <Paper elevation={3} style={{ padding: 16 }}>
+    <Typography gutterBottom>
+      <span className="section-title">Playlists</span>
+    </Typography>
+    <Box mb={1} display="flex" alignItems="center">
+      <TextField
+        label="Filter Playlists"
+        size="small"
+        value={playlistFilter}
+        onChange={(e) => setPlaylistFilter(e.target.value)}
+        style={{ flexGrow: 1, marginRight: 8 }}
+      />
+      <IconButton onClick={onOpenCreateDialog}>
+        <AddIcon />
+      </IconButton>
+      <IconButton onClick={fetchPlaylists}>
+        <RefreshIcon />
+      </IconButton>
+    </Box>
+    <Box style={{ height: "300px", overflowY: "auto" }}>
+      {playlists
+        .filter(p => p.title.toLowerCase().includes(playlistFilter.toLowerCase()))
+        .map(playlist => (
+          <Box
+            key={playlist.id || playlist.title}
+            onClick={() => onSelectPlaylist(playlist)}
+            sx={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              height: "60px",
+              p: 1,
+              mb: 1,
+              boxShadow: 1,
+              borderRadius: "4px",
+              overflow: "hidden"
+            }}
+          >
+            <Box mr={2}>
+              {playlist.img ? (
+                <img src={playlist.img} alt="cover" width={40} height={40} />
+              ) : (
+                <Box width={40} height={40} bgcolor="grey.300" />
+              )}
+            </Box>
+            <Box flexGrow={1}>
+              <Typography variant="subtitle1" sx={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis"
+              }}>
+                {playlist.title}
+              </Typography>
+            </Box>
+            <IconButton onClick={(e) => openPlaylistMenu(e, playlist.id || playlist.title)}>
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        ))}
+    </Box>
+    <Menu 
+      anchorEl={playlistMenuAnchor} 
+      open={Boolean(playlistMenuAnchor)} 
+      onClose={closePlaylistMenu}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+    >
+      <MenuItem onClick={handleDeletePlaylist}>Delete</MenuItem>
+    </Menu>
+  </Paper>
+);
+
+interface SongsSectionProps {
+  songsFilter: string;
+  setSongsFilter: React.Dispatch<React.SetStateAction<string>>;
+  songs: Array<SongDetail>;
+  selectedPlaylist: Playlist | null;
+  fetchSongs: (playlist: Playlist) => void;
+  openSongMenu: (e: React.MouseEvent<HTMLElement>, songId: string) => void;
+  songMenuAnchor: HTMLElement | null;
+  closeSongMenu: () => void;
+  handleRemoveSong: () => void;
+  openSongSaveSubMenu: (e: React.MouseEvent<HTMLElement>) => void;
+  songSaveMenuAnchor: HTMLElement | null;
+  playlists: Array<Playlist>;
+}
+
+const SongsSection: React.FC<SongsSectionProps> = ({
+  songsFilter,
+  setSongsFilter,
+  songs,
+  selectedPlaylist,
+  fetchSongs,
+  openSongMenu,
+  songMenuAnchor,
+  closeSongMenu,
+  handleRemoveSong,
+  openSongSaveSubMenu,
+  songSaveMenuAnchor,
+  playlists,
+}) => (
+  <Paper elevation={3} style={{ padding: 16 }}>
+    <Typography gutterBottom>
+      <span className="section-title">Songs</span>
+    </Typography>
+    <Box mb={1} display="flex" alignItems="center">
+      <TextField
+        label="Filter Songs"
+        size="small"
+        value={songsFilter}
+        onChange={(e) => setSongsFilter(e.target.value)}
+        style={{ flexGrow: 1, marginRight: 8 }}
+      />
+      <IconButton onClick={() => { if(selectedPlaylist) fetchSongs(selectedPlaylist); }}>
+        <RefreshIcon />
+      </IconButton>
+    </Box>
+    <Box style={{ height: "300px", overflowY: "auto" }}>
+      {selectedPlaylist ? (
+        <DragDropContext onDragEnd={(result: DropResult) => { /* ...existing code... */ }}>
+          <Droppable droppableId="songs">
+            {(provided) => (
+              <div ref={provided.innerRef} {...provided.droppableProps}>
+                {songs
+                  .filter(s => s.title.toLowerCase().includes(songsFilter.toLowerCase()))
+                  .map((song, index) => (
+                    <Draggable key={song.id} draggableId={song.id} index={index}>
+                      {(provided) => (
+                        <Box
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          onClick={() => {}}
+                          sx={{
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            height: "60px",
+                            p: 1,
+                            mb: 1,
+                            boxShadow: 1,
+                            borderRadius: "4px",
+                            overflow: "hidden"
+                          }}
+                        >
+                          <Box mr={2}>
+                            <Box width={40} height={40} bgcolor="grey.300" />
+                          </Box>
+                          <Box flexGrow={1}>
+                            <Typography variant="subtitle1" sx={{
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis"
+                            }}>
+                              {song.title}
+                            </Typography>
+                            <Typography variant="body2">
+                              {song.subTitle}
+                            </Typography>
+                          </Box>
+                          <IconButton onClick={(e) => openSongMenu(e, song.id)}>
+                            <MoreVertIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      )}
+                    </Draggable>
+                  ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      ) : (<></>)}
+    </Box>
+    <Menu 
+      anchorEl={songMenuAnchor} 
+      open={Boolean(songMenuAnchor)} 
+      onClose={closeSongMenu}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+    >
+      <MenuItem onClick={handleRemoveSong}>Remove</MenuItem>
+      <MenuItem onMouseEnter={openSongSaveSubMenu}>Save to Playlist</MenuItem>
+    </Menu>
+    <Menu
+      anchorEl={songSaveMenuAnchor}
+      open={Boolean(songSaveMenuAnchor)}
+      onClose={() => { /* ...existing code... */ }}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      PaperProps={{ ref: /* ...existing code... */ undefined }}
+    >
+      {playlists.map(pl => (
+        <MenuItem key={pl.id} onClick={() => { /* ...existing code... */ }}>
+          {pl.title}
+        </MenuItem>
+      ))}
+    </Menu>
+  </Paper>
+);
+
 const Popup: React.FC = () => {
   // Device Section state, Playlists state, Songs state, etc.
   const [deviceStatus, setDeviceStatus] = useState("No Device");
@@ -308,185 +534,6 @@ const Popup: React.FC = () => {
     </Paper>
   );
 
-  const PlaylistsSection = () => (
-    <Paper elevation={3} style={{ padding: 16 }}>
-      <Typography gutterBottom>
-        <span className="section-title">Playlists</span>
-      </Typography>
-      <Box mb={1} display="flex" alignItems="center">
-        <TextField
-          label="Filter Playlists"
-          size="small"
-          value={playlistFilter}
-          onChange={(e) => setPlaylistFilter(e.target.value)}
-          style={{ flexGrow: 1, marginRight: 8 }}
-        />
-        <IconButton onClick={() => setCreateDialogOpen(true)}>
-          <AddIcon />
-        </IconButton>
-        <IconButton onClick={fetchPlaylists}>
-          <RefreshIcon />
-        </IconButton>
-      </Box>
-      <Box style={{ height: "300px", overflowY: "auto" }}>
-        {playlists
-          .filter(p => p.title.toLowerCase().includes(playlistFilter.toLowerCase()))
-          .map(playlist => (
-            <Box
-              key={playlist.id || playlist.title}
-              onClick={() => { setSelectedPlaylist(playlist); fetchSongs(playlist); }}
-              sx={{
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                height: "60px",
-                p: 1,
-                mb: 1,
-                boxShadow: 1,
-                borderRadius: "4px",
-                overflow: "hidden"
-              }}
-            >
-              <Box mr={2}>
-                {playlist.img ? (
-                  <img src={playlist.img} alt="cover" width={40} height={40} />
-                ) : (
-                  <Box width={40} height={40} bgcolor="grey.300" />
-                )}
-              </Box>
-              <Box flexGrow={1}>
-                <Typography variant="subtitle1" sx={{
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}>
-                  {playlist.title}
-                </Typography>
-              </Box>
-              <IconButton 
-                onClick={(e) => openPlaylistMenu(e, playlist.id || playlist.title)}
-              >
-                <MoreVertIcon fontSize="small" /> {/* Replaced EditIcon with MoreVertIcon */}
-              </IconButton>
-            </Box>
-          ))}
-      </Box>
-      <Menu 
-        anchorEl={playlistMenuAnchor} 
-        open={Boolean(playlistMenuAnchor)} 
-        onClose={closePlaylistMenu}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}  // Updated alignment
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}     // Updated alignment
-      >
-        <MenuItem onClick={handleDeletePlaylist}>Delete</MenuItem>
-      </Menu>
-    </Paper>
-  );
-
-  const SongsSection = () => (
-    <Paper elevation={3} style={{ padding: 16 }}>
-      <Typography gutterBottom>
-        <span className="section-title">Songs</span>
-      </Typography>
-      <Box mb={1} display="flex" alignItems="center">
-        <TextField
-          label="Filter Songs"
-          size="small"
-          value={songsFilter}
-          onChange={(e) => setSongsFilter(e.target.value)}
-          style={{ flexGrow: 1, marginRight: 8 }}
-        />
-        <IconButton onClick={() => { if(selectedPlaylist) fetchSongs(selectedPlaylist); }}>
-          <RefreshIcon />
-        </IconButton>
-      </Box>
-      <Box style={{ height: "300px", overflowY: "auto" }}>
-        {selectedPlaylist ? (
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="songs">
-              {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps}>
-                  {songs
-                    .filter(s => s.title.toLowerCase().includes(songsFilter.toLowerCase()))
-                    .map((song, index) => (
-                      <Draggable key={song.id} draggableId={song.id} index={index}>
-                        {(provided) => (
-                          <Box
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            onClick={() => {}}
-                            sx={{
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              height: "60px",
-                              p: 1,
-                              mb: 1,
-                              boxShadow: 1,
-                              borderRadius: "4px",
-                              overflow: "hidden"
-                            }}
-                          >
-                            <Box mr={2}>
-                              <Box width={40} height={40} bgcolor="grey.300" />
-                            </Box>
-                            <Box flexGrow={1}>
-                              <Typography variant="subtitle1" sx={{
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis"
-                              }}>
-                                {song.title}
-                              </Typography>
-                              <Typography variant="body2">
-                                {song.subTitle}
-                              </Typography>
-                            </Box>
-                            <IconButton 
-                              onClick={(e) => openSongMenu(e, song.id)}
-                            >
-                              <MoreVertIcon fontSize="small" /> {/* Replaced EditIcon with MoreVertIcon */}
-                            </IconButton>
-                          </Box>
-                        )}
-                      </Draggable>
-                    ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-        ) : (<></>)
-        }
-      </Box>
-      <Menu 
-        anchorEl={songMenuAnchor} 
-        open={Boolean(songMenuAnchor)} 
-        onClose={closeSongMenu}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}  // Updated alignment
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}     // Updated alignment
-      >
-        <MenuItem onClick={handleRemoveSong}>Remove</MenuItem>
-        <MenuItem onMouseEnter={openSongSaveSubMenu}>Save to Playlist</MenuItem>
-      </Menu>
-      <Menu
-        anchorEl={songSaveMenuAnchor}
-        open={Boolean(songSaveMenuAnchor)}
-        onClose={closeSongSaveMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        PaperProps={{ ref: songSaveMenuRef }}
-      >
-        {playlists.map(pl => (
-          <MenuItem key={pl.id} onClick={() => handleSaveSongToPlaylist(pl.id)}>
-            {pl.title}
-          </MenuItem>
-        ))}
-      </Menu>
-    </Paper>
-  );
-
   const LogSection = () => (
     <Box mt={3}>
       <Accordion defaultExpanded>
@@ -602,12 +649,36 @@ const Popup: React.FC = () => {
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <Box style={{ pointerEvents: isConnected ? "auto" : "none", opacity: isConnected ? 1 : 0.5 }}>
-            <PlaylistsSection />
+            <PlaylistsSection
+              playlists={playlists}
+              playlistFilter={playlistFilter}
+              setPlaylistFilter={setPlaylistFilter}
+              onOpenCreateDialog={() => setCreateDialogOpen(true)}
+              fetchPlaylists={fetchPlaylists}
+              onSelectPlaylist={(playlist) => { setSelectedPlaylist(playlist); fetchSongs(playlist); }}
+              openPlaylistMenu={openPlaylistMenu}
+              playlistMenuAnchor={playlistMenuAnchor}
+              closePlaylistMenu={closePlaylistMenu}
+              handleDeletePlaylist={handleDeletePlaylist}
+            />
           </Box>
         </Grid>
         <Grid item xs={6}>
           <Box style={{ pointerEvents: isConnected ? "auto" : "none", opacity: isConnected ? 1 : 0.5 }}>
-            <SongsSection />
+            <SongsSection
+              songsFilter={songsFilter}
+              setSongsFilter={setSongsFilter}
+              songs={songs}
+              selectedPlaylist={selectedPlaylist}
+              fetchSongs={fetchSongs}
+              openSongMenu={openSongMenu}
+              songMenuAnchor={songMenuAnchor}
+              closeSongMenu={closeSongMenu}
+              handleRemoveSong={handleRemoveSong}
+              openSongSaveSubMenu={openSongSaveSubMenu}
+              songSaveMenuAnchor={songSaveMenuAnchor}
+              playlists={playlists}
+            />
           </Box>
         </Grid>
       </Grid>
