@@ -81,14 +81,17 @@ export class AdbService {
     return await adb.subprocess.spawnAndWait(command);
   }
 
-  public async pull(deviceFilePath: string): Promise<Uint8Array> {
+  public async pull(deviceFilePath: string): Promise<ArrayBuffer> {
     const adb = await this.connect();
     const sync = await adb.sync();
     const rs = sync.read(deviceFilePath);
     const chunks: Uint8Array[] = [];
-    for await (const chunk of rs) {
-      chunks.push(chunk);
+    const reader = rs.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
     }
-    return new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
+    return new Blob(chunks).arrayBuffer();
   }
 }

@@ -6,10 +6,16 @@ export interface DownloadEvent {
 export interface Song {
   title: string;
   hash: string;
+  levelId: string;
 }
 
 export interface Playlist {
   title: string;
   songs: Song[];
   img: string;  // base64
+}
+
+
+export interface SongDetail extends Song {
+
 }

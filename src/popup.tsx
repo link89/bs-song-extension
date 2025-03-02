@@ -34,8 +34,10 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
-import { AdbService } from "./adb";
 import untar from "js-untar";
+
+import { AdbService } from "./adb";
+import { Playlist } from "./type";
 
 const adbService = new AdbService();
 
@@ -123,22 +125,28 @@ const Popup: React.FC = () => {
   const fetchPlaylists = async () => {
     addLog("Fetching playlists...");
     try {
-      await adbService.shell(`cd ${customPlaylistsPath} && tar -czf ../playlists.tgz *`);
-      const tgzBuffer = await adbService.pull(`${customPlaylistsPath}/../playlists.tgz`);
-      const files = await untar(tgzBuffer.buffer);
-      console.log(files);
-      const extractedPlaylists = files.map((file) => {
-        console.log(file);
+      await adbService.shell(`cd ${customPlaylistsPath} && tar -cf ../playlists.tar *`);
+      const tgzBuffer = await adbService.pull(`${customPlaylistsPath}/../playlists.tar`);
+      const files = await untar(tgzBuffer);
+      const extractedPlaylists: Playlist[] = files.map((file) => {
         try {
           const jsonStr = new TextDecoder().decode(file.buffer);
-          console.log(jsonStr);
-          return JSON.parse(jsonStr);
+          const raw = JSON.parse(jsonStr);
+          return {
+            title: raw.playlistTitle,
+            img: raw.imageString,
+            songs: raw.songs.map((s: any) => ({
+              title: s.songName,
+              hash: s.hash,
+              levelId: s.levelid,
+            })),
+          } 
         } catch (err) {
           addLog(`Failed to parse ${file.name}: ${err.message}`);
           return null;
         }
       }).filter(Boolean);
-      const sorted = extractedPlaylists.sort((a, b) => a.name.localeCompare(b.name));
+      const sorted = extractedPlaylists.sort((a, b) => a.title.localeCompare(b.title));
       setPlaylists(sorted);
       addLog("Playlists loaded.");
     } catch (err) {
