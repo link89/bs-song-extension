@@ -179,6 +179,8 @@ const Popup: React.FC = () => {
 
   // Playlist menu handlers
   const openPlaylistMenu = (event: React.MouseEvent<HTMLElement>, playlistId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
     setMenuPlaylistId(playlistId);
     setPlaylistMenuAnchor(event.currentTarget);
   };
@@ -195,6 +197,8 @@ const Popup: React.FC = () => {
 
   // Song menu handlers
   const openSongMenu = (event: React.MouseEvent<HTMLElement>, songId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
     setMenuSongId(songId);
     setSongMenuAnchor(event.currentTarget);
   };
@@ -360,10 +364,7 @@ const Popup: React.FC = () => {
                 </Typography>
               </Box>
               <IconButton 
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  openPlaylistMenu(e, playlist.id || playlist.title); 
-                }}
+                onClick={(e) => openPlaylistMenu(e, playlist.id || playlist.title)}
               >
                 <MoreVertIcon fontSize="small" /> {/* Replaced EditIcon with MoreVertIcon */}
               </IconButton>
@@ -374,8 +375,8 @@ const Popup: React.FC = () => {
         anchorEl={playlistMenuAnchor} 
         open={Boolean(playlistMenuAnchor)} 
         onClose={closePlaylistMenu}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}   // Adjusted position
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}      // Adjusted position
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}  // Updated alignment
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}     // Updated alignment
       >
         <MenuItem onClick={handleDeletePlaylist}>Delete</MenuItem>
       </Menu>
@@ -443,10 +444,7 @@ const Popup: React.FC = () => {
                               </Typography>
                             </Box>
                             <IconButton 
-                              onClick={(e) => { 
-                                e.stopPropagation(); 
-                                openSongMenu(e, song.id); 
-                              }}
+                              onClick={(e) => openSongMenu(e, song.id)}
                             >
                               <MoreVertIcon fontSize="small" /> {/* Replaced EditIcon with MoreVertIcon */}
                             </IconButton>
@@ -460,15 +458,15 @@ const Popup: React.FC = () => {
             </Droppable>
           </DragDropContext>
         ) : (
-          <Typography variant="body2">No playlist selected</Typography>
+          <Typography variant="body2">Select a playlist to view songs.</Typography>
         )}
       </Box>
       <Menu 
         anchorEl={songMenuAnchor} 
         open={Boolean(songMenuAnchor)} 
         onClose={closeSongMenu}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}    // Adjusted position
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}       // Adjusted position
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}  // Updated alignment
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}     // Updated alignment
       >
         <MenuItem onClick={handleRemoveSong}>Remove</MenuItem>
         <MenuItem onMouseEnter={openSongSaveSubMenu}>Save to Playlist</MenuItem>
