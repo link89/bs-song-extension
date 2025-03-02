@@ -13,6 +13,7 @@ export interface Playlist {
   title: string;
   songs: Song[];
   img: string;  // base64
+  path: string;
 }
 
 

@@ -84,8 +84,6 @@ const Popup: React.FC = () => {
   const [defaultPlaylist, setDefaultPlaylist] = useState("");
   const [customSongPath, setCustomSongPath] = useState("/sdcard/ModData/com.beatgames.beatsaber/Mods/SongCore/CustomLevels");
   const [customPlaylistsPath, setCustomPlaylistsPath] = useState("/sdcard/ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists");
-  const [editingSongPath, setEditingSongPath] = useState(false);
-  const [editingPlaylistPath, setEditingPlaylistPath] = useState(false);
 
   // New settings modal state and temporary settings
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -98,7 +96,6 @@ const Popup: React.FC = () => {
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [newPlaylistCreator, setNewPlaylistCreator] = useState("");
   const [newPlaylistCover, setNewPlaylistCover] = useState("");
-
 
   // Effect: Subscribe to device list change
   useEffect(() => {
@@ -124,11 +121,13 @@ const Popup: React.FC = () => {
       const tgzBuffer = await adbService.pull(`${customPlaylistsPath}/../playlists.tar`);
       const files = await untar(tgzBuffer);
       const extractedPlaylists: Playlist[] = files.map((file) => {
+        console.log(`Extracting ${file.name}`);
         try {
           const jsonStr = new TextDecoder().decode(file.buffer);
           const raw = JSON.parse(jsonStr);
           return {
             title: raw.playlistTitle,
+            path: `${customPlaylistsPath}/${file.name}`,
             img: 'data:image/png;base64,' + raw.imageString,
             songs: raw.songs.map((s: any) => ({
               title: s.songName,
