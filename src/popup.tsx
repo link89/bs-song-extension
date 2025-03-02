@@ -70,7 +70,7 @@ const Popup: React.FC = () => {
   const [songsMap, setSongsMap] = useState<{ [id: string]: SongDetail }>({});
 
   // Songs list state
-  const [songs, setSongs] = useState<Array<any>>([]);
+  const [songs, setSongs] = useState<Array<SongDetail[]>>([]);
   const [songsFilter, setSongsFilter] = useState("");
   const [songMenuAnchor, setSongMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuSongId, setMenuSongId] = useState<string>("");
@@ -189,12 +189,15 @@ const Popup: React.FC = () => {
   };
 
   // Simulate fetch songs for a playlist
-  const fetchSongs = (playlistId: string) => {
+  const fetchSongs = async (playlistId: string) => {
     addLog(`Fetching songs for playlist ${playlistId}...`);
-    setTimeout(() => {
-      setSongs(fakeSongs[playlistId] || []);
-      addLog(`Songs for playlist ${playlistId} loaded.`);
-    }, 1000);
+    const playlist = playlists.find(p => p.id === playlistId);
+    if (!playlist) {
+      addLog(`Playlist ${playlistId} not found.`);
+      return;
+    }
+    const songs = playlist.songs.map(s => songsMap[s.levelId]);
+    setSongs(songs);
   };
 
   // Device connect button handler
