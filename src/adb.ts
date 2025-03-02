@@ -80,4 +80,15 @@ export class AdbService {
     const adb = await this.connect();
     return await adb.subprocess.spawnAndWait(command);
   }
+
+  public async pull(deviceFilePath: string): Promise<Uint8Array> {
+    const adb = await this.connect();
+    const sync = await adb.sync();
+    const rs = sync.read(deviceFilePath);
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of rs) {
+      chunks.push(chunk);
+    }
+    return new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
+  }
 }

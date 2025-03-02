@@ -35,6 +35,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import { AdbService } from "./adb";
+import untar from "js-untar";
 
 const adbService = new AdbService();
 
@@ -119,13 +120,30 @@ const Popup: React.FC = () => {
   };
 
   // Simulate fetch playlists
-  const fetchPlaylists = () => {
+  const fetchPlaylists = async () => {
     addLog("Fetching playlists...");
-    setTimeout(() => {
-      const sorted = fakePlaylists.sort((a, b) => a.name.localeCompare(b.name));
+    try {
+      await adbService.shell(`cd ${customPlaylistsPath} && tar -czf ../playlists.tgz *`);
+      const tgzBuffer = await adbService.pull(`${customPlaylistsPath}/../playlists.tgz`);
+      const files = await untar(tgzBuffer.buffer);
+      console.log(files);
+      const extractedPlaylists = files.map((file) => {
+        console.log(file);
+        try {
+          const jsonStr = new TextDecoder().decode(file.buffer);
+          console.log(jsonStr);
+          return JSON.parse(jsonStr);
+        } catch (err) {
+          addLog(`Failed to parse ${file.name}: ${err.message}`);
+          return null;
+        }
+      }).filter(Boolean);
+      const sorted = extractedPlaylists.sort((a, b) => a.name.localeCompare(b.name));
       setPlaylists(sorted);
       addLog("Playlists loaded.");
-    }, 1000);
+    } catch (err) {
+      addLog(`Error fetching playlists: ${err.message}`);
+    }
   };
 
   // Simulate fetch songs for a playlist
