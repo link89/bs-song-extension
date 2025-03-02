@@ -5,7 +5,6 @@ export interface DownloadEvent {
 
 export interface Song {
   title: string;
-  hash: string;
   levelId: string;
 }
 
@@ -16,7 +15,10 @@ export interface Playlist {
   path: string;
 }
 
-
 export interface SongDetail extends Song {
-
+  subTitle: string;
+  author: string;
+  mapper: string;
+  bpm: number;
+  path: string;
 }

@@ -26,18 +26,15 @@ import {
   Paper,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import untar from "js-untar";
 
 import { AdbService } from "./adb";
-import { Playlist } from "./type";
+import { Playlist, SongDetail } from "./type";
 
 const adbService = new AdbService();
 
@@ -68,6 +65,9 @@ const Popup: React.FC = () => {
   const [selectedPlaylist, setSelectedPlaylist] = useState<any>(null);
   const [playlistMenuAnchor, setPlaylistMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuPlaylistId, setMenuPlaylistId] = useState<string>("");
+
+  // All custom songs state
+  const [songsMap, setSongsMap] = useState<{ [id: string]: SongDetail }>({});
 
   // Songs list state
   const [songs, setSongs] = useState<Array<any>>([]);
@@ -113,15 +113,50 @@ const Popup: React.FC = () => {
     setLogs((prev) => [...prev, msg]);
   };
 
-  // Simulate fetch playlists
+  const fetchSongsMap = async () => {
+    addLog("Fetching all songs...");
+    try {
+      addLog("Creating songs.tar...");
+      await adbService.shell(`cd ${customSongPath} && tar -cf ../songs.tar */Info.dat`);
+      addLog("Pulling songs.tar...");
+      const tgzBuffer = await adbService.pull(`${customSongPath}/../songs.tar`);
+      addLog("Extracting songs.tar...");
+      const files = await untar(tgzBuffer);
+      const songsMap = {};
+      for (const file of files) {
+        console.log(`Extracting ${file.name}...`);
+        try {
+          const jsonStr = new TextDecoder().decode(file.buffer);
+          const raw = JSON.parse(jsonStr);
+          const dirname = file.name.split("/")[0];
+          const id = `custom_level_${dirname}`;
+          songsMap[id] = {
+            title: raw._songName,
+            subTitle: raw._songSubName,
+            author: raw._songAuthorName,
+            mapper: raw._levelAuthorName,
+            bpm: raw._beatsPerMinute,
+            path: `${customSongPath}/${file.name}`,
+            levelId: id,
+          };
+        } catch (err) {
+          addLog(`Error parse ${file.name}: ${err.message}`);
+        }
+      }
+    } catch (err) {
+      addLog(`Error fetching all songs: ${err.message}`);
+    }
+  }
+
   const fetchPlaylists = async () => {
+    await fetchSongsMap();
     addLog("Fetching playlists...");
     try {
       await adbService.shell(`cd ${customPlaylistsPath} && tar -cf ../playlists.tar *`);
       const tgzBuffer = await adbService.pull(`${customPlaylistsPath}/../playlists.tar`);
       const files = await untar(tgzBuffer);
       const extractedPlaylists: Playlist[] = files.map((file) => {
-        console.log(`Extracting ${file.name}`);
+        console.log(`Extracting playist ${file.name}`);
         try {
           const jsonStr = new TextDecoder().decode(file.buffer);
           const raw = JSON.parse(jsonStr);
@@ -129,11 +164,16 @@ const Popup: React.FC = () => {
             title: raw.playlistTitle,
             path: `${customPlaylistsPath}/${file.name}`,
             img: raw.imageString ? 'data:image/png;base64,' + raw.imageString : undefined,
-            songs: raw.songs.map((s: any) => ({
-              title: s.songName,
-              hash: s.hash,
-              levelId: s.levelid,
-            })),
+            songs: raw.songs.map((s: any) => {
+              const song = songsMap[s.levelid];
+              if (!!song) {
+                console.log(`Song ${s.levelid} not found in songs map.`);
+              }
+              return {
+                title: s.songName,
+                levelId: s.levelid,
+              }
+            }),
           } 
         } catch (err) {
           addLog(`Failed to parse ${file.name}: ${err.message}`);
