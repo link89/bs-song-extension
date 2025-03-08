@@ -1,7 +1,6 @@
 import React from "react";
 import { Box, IconButton, Menu, MenuItem, Paper, TextField, Tooltip, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Playlist } from "../type";
 
@@ -44,9 +43,6 @@ export const PlaylistsSection: React.FC<PlaylistsSectionProps> = ({
       />
       <IconButton onClick={onOpenCreateDialog}>
         <AddIcon />
-      </IconButton>
-      <IconButton onClick={fetchPlaylists}>
-        <RefreshIcon />
       </IconButton>
     </Box>
     <Box style={{ height: "300px", overflowY: "auto" }}>
