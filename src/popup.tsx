@@ -111,7 +111,7 @@ const PlaylistsSection: React.FC<PlaylistsSectionProps> = ({
                 <Box width={40} height={40} bgcolor="grey.300" />
               )}
             </Box>
-            <Box flexGrow={1}>
+            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
               <Tooltip title={playlist.title}>
                 <Typography variant="subtitle1" sx={{
                   whiteSpace: "nowrap",
@@ -122,9 +122,11 @@ const PlaylistsSection: React.FC<PlaylistsSectionProps> = ({
                 </Typography>
               </Tooltip>
             </Box>
-            <IconButton onClick={(e) => openPlaylistMenu(e, playlist.id || playlist.title)}>
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
+            <Box>
+              <IconButton onClick={(e) => openPlaylistMenu(e, playlist.id || playlist.title)}>
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+            </Box>
           </Box>
         ))}
     </Box>
@@ -212,10 +214,9 @@ const SongsSection: React.FC<SongsSectionProps> = ({
                           }}
                         >
                           <Box mr={2}>
-                            { /* Changed: default cover to music icon */ }
                             <MusicNoteIcon style={{ width: 40, height: 40 }} />
                           </Box>
-                          <Box flexGrow={1}>
+                          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                             <Tooltip title={song.title}>
                               <Typography variant="subtitle1" sx={{
                                 whiteSpace: "nowrap",
@@ -229,9 +230,11 @@ const SongsSection: React.FC<SongsSectionProps> = ({
                               {song.subTitle}
                             </Typography>
                           </Box>
-                          <IconButton onClick={(e) => openSongMenu(e, song.id)}>
-                            <MoreVertIcon fontSize="small" />
-                          </IconButton>
+                          <Box>
+                            <IconButton onClick={(e) => openSongMenu(e, song.id)}>
+                              <MoreVertIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
                         </Box>
                       )}
                     </Draggable>
