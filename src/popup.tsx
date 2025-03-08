@@ -1,39 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import ReactDOM from "react-dom";
 import {
-  AppBar,
   Box,
-  Button,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Grid,
   IconButton,
-  InputAdornment,
-  Menu,
-  MenuItem,
-  TextField,
-  Toolbar,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Select,
-  FormControl,
-  InputLabel,
-  Paper,
-  Tooltip,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import EditIcon from "@mui/icons-material/Edit";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import AddIcon from "@mui/icons-material/Add";
 import SettingsIcon from "@mui/icons-material/Settings";
-import MoreVertIcon from '@mui/icons-material/MoreVert';  // Added import for 3 dots icon
-import MusicNoteIcon from '@mui/icons-material/MusicNote'; // <-- new import added
-import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { DropResult } from "react-beautiful-dnd";
 import untar from "js-untar";
 
 import { AdbService } from "./adb";
@@ -41,6 +16,9 @@ import { Playlist, SongDetail } from "./type";
 import { PlaylistsSection } from "./components/PlaylistsSection";
 import { SongsSection } from "./components/SongsSection";
 import { SettingsDialog } from "./components/SettingsDialog";
+import { DeviceSession } from "./components/DeviceSession";
+import { LogSection } from "./components/LogSection";
+import { CreatePlaylistDialog } from "./components/CreatePlaylistDialog";
 
 const adbService = new AdbService();
 
@@ -300,71 +278,6 @@ const Popup: React.FC = () => {
     setIsSettingsModalOpen(false);
   };
 
-  const DeviceSection = () => (
-    <Paper elevation={3} style={{ padding: 16, marginBottom: 16 }}>
-      <Grid container>
-        <Grid item xs={6}>
-          <Typography variant="subtitle1">{deviceStatus}</Typography>
-        </Grid>
-        <Grid item xs={6} style={{ textAlign: "right" }}>
-          <Button variant="contained" onClick={handleConnect} disabled={isConnected}>
-            Connect Device
-          </Button>
-        </Grid>
-      </Grid>
-    </Paper>
-  );
-
-  const LogSection = () => (
-    <Box mt={3}>
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography><span className="section-title">Log</span></Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box style={{ maxHeight: 150, overflowY: "auto" }}>
-            {logs.map((log, idx) => (
-              <Typography variant="caption" key={idx} display="block">{log}</Typography>
-            ))}
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-    </Box>
-  );
-
-  const CreatePlaylistDialog = () => (
-    <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)}>
-      <DialogTitle>Create New Playlist</DialogTitle>
-      <DialogContent>
-        <TextField
-          label="Playlist Name"
-          fullWidth
-          margin="dense"
-          value={newPlaylistName}
-          onChange={(e) => setNewPlaylistName(e.target.value)}
-        />
-        <TextField
-          label="Creator"
-          fullWidth
-          margin="dense"
-          value={newPlaylistCreator}
-          onChange={(e) => setNewPlaylistCreator(e.target.value)}
-        />
-        <TextField
-          label="Cover URL (optional)"
-          fullWidth
-          margin="dense"
-          value={newPlaylistCover}
-          onChange={(e) => setNewPlaylistCover(e.target.value)}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
-        <Button onClick={handleCreatePlaylist} variant="contained">Create</Button>
-      </DialogActions>
-    </Dialog>
-  );
-
   return (
     <Container maxWidth="lg" style={{ marginTop: 20 }}>
       <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -375,7 +288,11 @@ const Popup: React.FC = () => {
           <SettingsIcon />
         </IconButton>
       </Box>
-      <DeviceSection />
+      <DeviceSession
+        deviceStatus={deviceStatus}
+        isConnected={isConnected}
+        handleConnect={handleConnect}
+      />
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <Box style={{ pointerEvents: isConnected ? "auto" : "none", opacity: isConnected ? 1 : 0.5 }}>
@@ -414,8 +331,18 @@ const Popup: React.FC = () => {
           </Box>
         </Grid>
       </Grid>
-      <LogSection />
-      <CreatePlaylistDialog />
+      <LogSection logs={logs} />
+      <CreatePlaylistDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        newPlaylistName={newPlaylistName}
+        setNewPlaylistName={setNewPlaylistName}
+        newPlaylistCreator={newPlaylistCreator}
+        setNewPlaylistCreator={setNewPlaylistCreator}
+        newPlaylistCover={newPlaylistCover}
+        setNewPlaylistCover={setNewPlaylistCover}
+        handleCreatePlaylist={handleCreatePlaylist}
+      />
       <SettingsDialog
         isOpen={isSettingsModalOpen}
         onClose={handleSettingsCancel}
