@@ -120,7 +120,9 @@ export const SongsSection: React.FC<SongsSectionProps> = ({
       transformOrigin={{ vertical: 'top', horizontal: 'left' }}
     >
       <MenuItem onClick={handleRemoveSong}>Remove</MenuItem>
-      <MenuItem onMouseEnter={openSongSaveSubMenu}>Save to Playlist</MenuItem>
+      <MenuItem onMouseEnter={(e) => { closeSongMenu(); openSongSaveSubMenu(e); }}>
+        Save to Playlist
+      </MenuItem>
     </Menu>
     <Menu
       anchorEl={songSaveMenuAnchor}
