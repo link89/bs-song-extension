@@ -24,6 +24,7 @@ import {
   FormControl,
   InputLabel,
   Paper,
+  Tooltip,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
@@ -111,13 +112,15 @@ const PlaylistsSection: React.FC<PlaylistsSectionProps> = ({
               )}
             </Box>
             <Box flexGrow={1}>
-              <Typography variant="subtitle1" sx={{
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis"
-              }}>
-                {playlist.title}
-              </Typography>
+              <Tooltip title={playlist.title}>
+                <Typography variant="subtitle1" sx={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis"
+                }}>
+                  {playlist.title}
+                </Typography>
+              </Tooltip>
             </Box>
             <IconButton onClick={(e) => openPlaylistMenu(e, playlist.id || playlist.title)}>
               <MoreVertIcon fontSize="small" />
@@ -213,13 +216,15 @@ const SongsSection: React.FC<SongsSectionProps> = ({
                             <MusicNoteIcon style={{ width: 40, height: 40 }} />
                           </Box>
                           <Box flexGrow={1}>
-                            <Typography variant="subtitle1" sx={{
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis"
-                            }}>
-                              {song.title}
-                            </Typography>
+                            <Tooltip title={song.title}>
+                              <Typography variant="subtitle1" sx={{
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis"
+                              }}>
+                                {song.title}
+                              </Typography>
+                            </Tooltip>
                             <Typography variant="body2">
                               {song.subTitle}
                             </Typography>
