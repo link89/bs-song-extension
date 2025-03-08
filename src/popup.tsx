@@ -40,6 +40,7 @@ import { AdbService } from "./adb";
 import { Playlist, SongDetail } from "./type";
 import { PlaylistsSection } from "./components/PlaylistsSection";
 import { SongsSection } from "./components/SongsSection";
+import { SettingsDialog } from "./components/SettingsDialog";
 
 const adbService = new AdbService();
 
@@ -364,57 +365,6 @@ const Popup: React.FC = () => {
     </Dialog>
   );
 
-  const SettingsDialog = () => (
-    <Dialog open={isSettingsModalOpen} onClose={handleSettingsCancel} fullWidth maxWidth="md">
-      <DialogTitle>Settings</DialogTitle>
-      <DialogContent>
-        <Box mt={1}>
-          <FormControl fullWidth size="small" variant="outlined" margin="dense">
-            <InputLabel id="default-playlist-label">Default Playlist</InputLabel>
-            <Select
-              labelId="default-playlist-label"
-              value={tempDefaultPlaylist}
-              label="Default Playlist"
-              onChange={(e) => setTempDefaultPlaylist(e.target.value as string)}
-            >
-              {playlists.map(pl => (
-                <MenuItem key={pl.id || pl.title} value={pl.id || pl.title}>
-                  {pl.title}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
-        <Box mt={2}>
-          <TextField
-            fullWidth
-            size="small"
-            variant="outlined"
-            label="Custom Song Path"
-            value={tempCustomSongPath}
-            onChange={(e) => setTempCustomSongPath(e.target.value)}
-            margin="dense"
-          />
-        </Box>
-        <Box mt={2}>
-          <TextField
-            fullWidth
-            size="small"
-            variant="outlined"
-            label="Custom Playlists Path"
-            value={tempCustomPlaylistsPath}
-            onChange={(e) => setTempCustomPlaylistsPath(e.target.value)}
-            margin="dense"
-          />
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleSettingsCancel}>Cancel</Button>
-        <Button onClick={handleSettingsSave} variant="contained">Save</Button>
-      </DialogActions>
-    </Dialog>
-  );
-
   return (
     <Container maxWidth="lg" style={{ marginTop: 20 }}>
       <Box display="flex" alignItems="center" justifyContent="space-between">
@@ -466,7 +416,18 @@ const Popup: React.FC = () => {
       </Grid>
       <LogSection />
       <CreatePlaylistDialog />
-      <SettingsDialog />
+      <SettingsDialog
+        isOpen={isSettingsModalOpen}
+        onClose={handleSettingsCancel}
+        onSave={handleSettingsSave}
+        playlists={playlists}
+        tempDefaultPlaylist={tempDefaultPlaylist}
+        setTempDefaultPlaylist={setTempDefaultPlaylist}
+        tempCustomSongPath={tempCustomSongPath}
+        setTempCustomSongPath={setTempCustomSongPath}
+        tempCustomPlaylistsPath={tempCustomPlaylistsPath}
+        setTempCustomPlaylistsPath={setTempCustomPlaylistsPath}
+      />
     </Container>
   );
 };
