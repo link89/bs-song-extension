@@ -306,7 +306,9 @@ const Popup: React.FC = () => {
           <Typography variant="subtitle1">{deviceStatus}</Typography>
         </Grid>
         <Grid item xs={6} style={{ textAlign: "right" }}>
-          <Button variant="contained" onClick={handleConnect}>Connect Device</Button>
+          <Button variant="contained" onClick={handleConnect} disabled={isConnected}>
+            Connect Device
+          </Button>
         </Grid>
       </Grid>
     </Paper>
